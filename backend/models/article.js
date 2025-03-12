@@ -2,6 +2,7 @@ const { Sequelize, DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 const CloudinaryImage = require("./cloudinaryImage");
 const Category = require("./category");
+const User = require("./user");
 
 const Article = sequelize.define(
   "Article",
@@ -19,30 +20,42 @@ const Article = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: false,
     },
-    published_at: {
+    slug: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      unique: true,
+    },
+    status: {
+      type: DataTypes.STRING,
+      defaultValue: "draft",
+      validate: {
+        isIn: [["draft", "published", "archived"]],
+      },
+    },
+    view_count: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    created_at: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: Sequelize.NOW,
     },
-    source: {
-      type: DataTypes.STRING(255),
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.NOW,
     },
   },
   {
-    timestamps: true, // Active createdAt et updatedAt automatiquement
+    tableName: "Articles",
+    timestamps: true,
+    createdAt: "created_at",
+    updatedAt: "updated_at",
   }
 );
 
-// Relation avec CloudinaryImages
-Article.belongsTo(CloudinaryImage, {
-  foreignKey: "image_id",
-  as: "image",
-});
-
-// Relation avec Categories
-Article.belongsTo(Category, {
-  foreignKey: "category_id",
-  as: "category",
-});
+// Remove all association definitions from here
+// They should only be defined in models/index.js
 
 module.exports = Article;

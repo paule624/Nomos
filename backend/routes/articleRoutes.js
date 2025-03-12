@@ -2,11 +2,29 @@
 const express = require("express");
 const router = express.Router();
 const articleController = require("../controllers/articleController");
+const {
+  authenticateToken,
+  isAdmin,
+  isAuthorOrAdmin,
+} = require("../middlewares/authMiddleware");
 
-// Route pour obtenir tous les utilisateurs
+// Routes publiques (accessibles sans authentification)
 router.get("/", articleController.getArticles);
+router.get("/category/:categoryId", articleController.getArticlesByCategory);
+router.get("/:id", articleController.getArticleById);
 
-// Route pour créer un utilisateur
-router.post("/", articleController.createArticle);
+router.post("/", authenticateToken, articleController.createArticle);
+router.put(
+  "/:id",
+  authenticateToken,
+  isAuthorOrAdmin,
+  articleController.updateArticle
+);
+router.delete(
+  "/:id",
+  authenticateToken,
+  isAuthorOrAdmin,
+  articleController.deleteArticle
+);
 
 module.exports = router;

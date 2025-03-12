@@ -1,12 +1,16 @@
-const { Sequelize } = require("sequelize");
-
-// Configuration de la connexion à la base de données PostgreSQL
-const sequelize = new Sequelize(
-  "postgres://root:paule624@localhost:5432/Nomos_bdd",
-  {
-    dialect: "postgres",
-    logging: false, // Désactiver le logging des requêtes SQL
-  }
-);
+const { Sequelize } = require('sequelize');
+require('dotenv').config();
+const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
+    host: process.env.DB_HOST,
+    dialect: 'postgres',
+    port: process.env.DB_PORT,
+    logging: false,
+    pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000,
+        idle: 10000
+    }
+});
 
 module.exports = sequelize;

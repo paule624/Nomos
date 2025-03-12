@@ -1,49 +1,44 @@
-// models/user.js
-const { Sequelize, DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
+const { Sequelize, DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
 
-const User = sequelize.define(
-  "User",
-  {
+const User = sequelize.define('User', {
     id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
     },
     email: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-      unique: true,
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
     },
     password: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
+        type: DataTypes.STRING,
+        allowNull: false
     },
     first_name: {
-      type: DataTypes.STRING(100),
+        type: DataTypes.STRING,
+        allowNull: false
     },
     last_name: {
-      type: DataTypes.STRING(100),
+        type: DataTypes.STRING,
+        allowNull: false
     },
     role: {
-      type: DataTypes.STRING(50),
-    },
-    preferences: {
-      type: DataTypes.JSON,
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      defaultValue: Sequelize.NOW,
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      defaultValue: Sequelize.NOW,
-    },
-  },
-  {
-    tableName: "Users",
-    timestamps: false,
-  }
-);
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'user'
+    }
+}, {
+    tableName: 'Users',
+    timestamps: true,  // Active les timestamps
+    createdAt: 'created_at', 
+    updatedAt: 'updated_at'  
+});
+
+// Synchronisation avec la base de données (ajouter les colonnes created_at et updated_at si elles manquent)
+sequelize.sync()
+    .then(() => console.log('User table created successfully'))
+    .catch(err => console.error('Error creating User table:', err));
 
 module.exports = User;

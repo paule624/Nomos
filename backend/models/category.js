@@ -19,10 +19,22 @@ const Category = sequelize.define(
       allowNull: false,
       defaultValue: Sequelize.NOW,
     },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
   {
-    timestamps: false,
+    tableName: 'Categories', // Utilise le bon nom de table
+    timestamps: true, // Active les timestamps
+    createdAt: 'created_at', // Nom de la colonne `created_at`
+    updatedAt: 'updated_at', // Nom de la colonne `updated_at`
   }
 );
+
+// Hook pour mettre à jour `updated_at` avant la mise à jour
+Category.beforeUpdate((category, options) => {
+  category.updated_at = Sequelize.NOW;
+});
 
 module.exports = Category;

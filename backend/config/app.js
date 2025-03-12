@@ -1,23 +1,24 @@
-// app.js
 const express = require("express");
-const app = express();
+const cors = require("cors");
+
+// Importation des routes
 const userRoutes = require("../routes/userRoutes");
 const articleRoutes = require("../routes/articleRoutes");
 const recommendationRoutes = require("../routes/recommendationRoutes");
 const cloudinaryImageRoutes = require("../routes/cloudinaryImageRoutes");
 const categoryRoutes = require("../routes/categoryRoutes");
+const authRoutes = require("../routes/authRoutes");
+const app = express();
 
-app.use(express.json()); // Permet de traiter les données JSON envoyées dans les requêtes
+// Middleware
+app.use(cors());
+app.use(express.json());
 
-// Utilisation des routes
-app.use("/users", userRoutes);
+// Routes
 app.use("/articles", articleRoutes);
-app.use("/recommendations", recommendationRoutes);
-app.use("/cloudinary-images", cloudinaryImageRoutes);
+app.use("/users", userRoutes);
 app.use("/categories", categoryRoutes);
+app.use("/upload", cloudinaryImageRoutes);
+app.use("/auth", authRoutes);
 
-// Démarrer le serveur
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+module.exports = app;
