@@ -2,7 +2,14 @@ const userService = require("../services/userService");
 
 const createUser = async (req, res) => {
   try {
-    const user = await userService.createUser(req.body);
+    // Set default values for first_name and last_name if they're not provided
+    const userData = {
+      ...req.body,
+      first_name: req.body.first_name || req.body.username || "User",
+      last_name: req.body.last_name || "",
+    };
+
+    const user = await userService.createUser(userData);
     res.status(201).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
