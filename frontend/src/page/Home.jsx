@@ -115,67 +115,79 @@ const Home = () => {
         {/* Container avec taille maximale */}
         <div className="relative mx-auto w-full max-w-[500px] h-[90vh] min-h-[600px] max-h-[1000px]">
           {/* Mockup du téléphone avec ratio préservé */}
-          <div className="relative w-full h-full bg-amber-300 rounded-[clamp(30px,5vw,60px)] shadow-xl overflow-hidden border-[clamp(8px,1.5vw,14px)] border-[#22333B]">
+          <div className="relative w-full h-full bg-[#] rounded-[clamp(30px,5vw,60px)] shadow-xl overflow-hidden border-[clamp(8px,1.5vw,14px)] border-[#22333B]">
             {/* Encoche du téléphone */}
             <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[40%] h-[clamp(20px,3vh,28px)] bg-[#22333B] rounded-b-3xl z-20"></div>
 
             {/* Contenu de l'application avec padding adaptatif */}
-            <div className="relative h-full w-full bg-amber-300 overflow-hidden">
-              {/* Header avec les boutons */}
-              <div className="flex justify-between items-center px-[clamp(16px,2vw,24px)] pt-[clamp(24px,4vh,40px)] text-[clamp(16px,2vw,24px)] text-[#22333B] relative">
-                <div className="w-8"></div>
+            <div className="relative h-full w-full bg-[#F2F4F3] overflow-hidden">
+              {/* Header avec les boutons - masqué si categories est actif */}
+              {activeTab !== "categories" && (
+                <div className="flex justify-between items-center px-[clamp(16px,2vw,24px)] pt-[clamp(24px,4vh,40px)] text-[clamp(16px,2vw,24px)] text-[#22333B] relative">
+                  <div className="w-8"></div>
 
-                <div className="flex gap-8 absolute left-1/2 transform -translate-x-1/2">
-                  <button
-                    onClick={() => setActiveTab("actualites")}
-                    className={`font-[Bold_Dispo] relative ${
-                      activeTab === "actualites"
-                        ? "text-[#22333B]"
-                        : "text-[#22333B]/70"
-                    }`}
-                  >
-                    Actualités
-                    <span
-                      className={`absolute bottom-0 left-0 w-full h-0.5 bg-[#22333B] transform transition-all duration-300 ease-in-out ${
-                        activeTab === "actualites" ? "scale-x-100" : "scale-x-0"
+                  <div className="flex gap-8 absolute left-1/2 transform -translate-x-1/2">
+                    <button
+                      onClick={() => setActiveTab("actualites")}
+                      className={`font-[Bold_Dispo] relative ${
+                        activeTab === "actualites"
+                          ? "text-[#22333B]"
+                          : "text-[#22333B]/70"
                       }`}
-                    ></span>
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("pourtoi")}
-                    className={`relative ${
-                      activeTab === "pourtoi"
-                        ? "text-[#22333B]"
-                        : "text-[#22333B]/70"
-                    }`}
-                  >
-                    Pour toi
-                    <span
-                      className={`absolute bottom-0 left-0 w-full h-0.5 bg-[#22333B] transform transition-all duration-300 ease-in-out ${
-                        activeTab === "pourtoi" ? "scale-x-100" : "scale-x-0"
+                    >
+                      Actualités
+                      <span
+                        className={`absolute bottom-0 left-0 w-full h-0.5 bg-[#22333B] transform transition-all duration-300 ease-in-out ${
+                          activeTab === "actualites"
+                            ? "scale-x-100"
+                            : "scale-x-0"
+                        }`}
+                      ></span>
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("pourtoi")}
+                      className={`relative ${
+                        activeTab === "pourtoi"
+                          ? "text-[#22333B]"
+                          : "text-[#22333B]/70"
                       }`}
-                    ></span>
-                  </button>
+                    >
+                      Pour toi
+                      <span
+                        className={`absolute bottom-0 left-0 w-full h-0.5 bg-[#22333B] transform transition-all duration-300 ease-in-out ${
+                          activeTab === "pourtoi" ? "scale-x-100" : "scale-x-0"
+                        }`}
+                      ></span>
+                    </button>
+                  </div>
+
+                  <img src={profil} alt="pdp" className="w-15 h-15" />
                 </div>
+              )}
 
-                <img src={profil} alt="pdp" className="w-15 h-15" />
-              </div>
-
-              {/* Contenu scrollable */}
-              <div className="overflow-y-auto h-[calc(100%-clamp(100px,15vh,150px))]">
+              {/* Ajuster la hauteur du contenu en fonction de si categories est actif */}
+              <div
+                className={`overflow-y-auto ${
+                  activeTab === "categories"
+                    ? "h-full"
+                    : "h-[calc(100%-clamp(100px,15vh,150px))]"
+                }`}
+              >
                 {activeTab === "actualites" ? (
                   <Actualites />
                 ) : activeTab === "pourtoi" ? (
                   <PourToi />
                 ) : activeTab === "categories" ? (
-                  <Categories />
+                  <Categories setActiveTab={setActiveTab} />
                 ) : null}
               </div>
 
-              {/* Footer */}
-              <div className="absolute bottom-[clamp(24px,4vh,48px)] w-full flex">
-                <Footer onCategoryClick={() => setActiveTab("categories")} />
-              </div>
+              {/* Footer - masqué si categories est actif */}
+              {activeTab !== "categories" && (
+                <div className="absolute bottom-[clamp(24px,4vh,48px)] w-full flex">
+                  <Footer onCategoryClick={() => setActiveTab("categories")} />
+                </div>
+              )}
             </div>
           </div>
         </div>

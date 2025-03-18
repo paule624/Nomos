@@ -2,10 +2,19 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import categoriesData from "/Data/categories.json";
 
-function Categories() {
+function Categories({ setActiveTab }) {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleBack = () => {
+    setActiveTab("actualites"); // Retour à l'onglet actualités
+  };
+
+  const filteredCategories = categories.filter((category) =>
+    category.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -76,12 +85,61 @@ function Categories() {
 
   return (
     <div className="px-6 py-4 w-full">
-      <h1 className="text-3xl font-[Bold_Dispo] mb-8 text-[#22333B]">
-        Catégories
-      </h1>
+      <div className="hero flex justify-center relative drop-shadow-[0_3px_7.7px_rgba(0,0,0,0.25)]">
+        <button
+          onClick={handleBack}
+          className="absolute left-0 top-1/2 -translate-y-1/2 p-2 rounded-full bg-[white]/50 hover:bg-white/70 transition-colors"
+        >
+          <svg
+            className="w-6 h-6 text-[#22333B]"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M15 18L9 12L15 6"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+        <h1 className="text-2xl font-semibold mb-8 text-[#22333B] justify-center pt-5">
+          Le catalogue
+        </h1>
+      </div>
 
+      {/* Search Bar */}
+      <div className="relative mb-6">
+        <input
+          type="text"
+          placeholder="Rechercher une catégorie..."
+          className="w-full py-2 pl-10 pr-4 rounded-full bg-[#DBDBDB]/80 text-[#22333B] placeholder-[#22333B]/70 focus:outline-none focus:ring-2 focus:ring-[#DBDBDB]/50 shadow-sm"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <svg
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#22333B]/70"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+      </div>
+
+      <p className="text-s italic">
+        Vous pouvez retrouvez tout les articles de Nomos dans le catalogue.
+      </p>
       <div className="flex flex-col space-y-4 w-full">
-        {categories.map((category) => (
+        {filteredCategories.map((category) => (
           <div
             key={category.id}
             className="w-full p-2 rounded-full shadow-md transition-all hover:shadow-lg flex items-center justify-between"
