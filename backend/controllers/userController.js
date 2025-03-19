@@ -63,6 +63,23 @@ const deleteUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+const getUserPreferences = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await userService.getUserById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
+
+    res.json({ preferences: user.selectedCategories || [] });
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la récupération des préférences",
+      error: error.message,
+    });
+  }
+};
 
 module.exports = {
   createUser,
@@ -70,4 +87,5 @@ module.exports = {
   getUserById,
   updateUser,
   deleteUser,
+  getUserPreferences,
 };

@@ -17,33 +17,27 @@ function Login({ onLoginSuccess }) {
         email,
         password,
       });
-
-      // Store the token in localStorage
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
-
-      // Notify parent component about successful login
       if (onLoginSuccess) onLoginSuccess(response.data);
     } catch (err) {
-      setError(err.response?.data?.message || "An error occurred during login");
+      setError(err.response?.data?.message || "Une erreur est survenue");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-[Bold_Dispo] mb-6 text-center text-[#22333B]">
-        Connexion
-      </h2>
-
+    <form onSubmit={handleSubmit} className="w-full">
       {error && (
-        <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">{error}</div>
+        <div className="mb-6 p-3 bg-red-100/50 backdrop-blur-sm text-red-700 rounded-xl text-center">
+          {error}
+        </div>
       )}
 
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-[#22333B] mb-2" htmlFor="email">
+      <div className="space-y-6">
+        <div>
+          <label className="block text-[#22333B] text-lg mb-2" htmlFor="email">
             Email
           </label>
           <input
@@ -51,13 +45,18 @@ function Login({ onLoginSuccess }) {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-[#D7F75B]"
+            className="w-full p-3 bg-white/50 backdrop-blur-sm border-2 border-[#22333B]/10 rounded-xl 
+            focus:outline-none focus:border-[#D7F75B] focus:shadow-[0_0_7.53px_rgba(215,247,91,0.7)] 
+            transition-all"
             required
           />
         </div>
 
-        <div className="mb-6">
-          <label className="block text-[#22333B] mb-2" htmlFor="password">
+        <div>
+          <label
+            className="block text-[#22333B] text-lg mb-2"
+            htmlFor="password"
+          >
             Mot de passe
           </label>
           <input
@@ -65,7 +64,9 @@ function Login({ onLoginSuccess }) {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-[#D7F75B]"
+            className="w-full p-3 bg-white/50 backdrop-blur-sm border-2 border-[#22333B]/10 rounded-xl 
+            focus:outline-none focus:border-[#D7F75B] focus:shadow-[0_0_7.53px_rgba(215,247,91,0.7)] 
+            transition-all"
             required
           />
         </div>
@@ -73,19 +74,13 @@ function Login({ onLoginSuccess }) {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-[#22333B] text-white py-2 rounded hover:bg-[#22333B]/90 transition-colors"
+          className="w-full bg-[#D7F75B] text-[#22333B] py-3 px-6 rounded-xl font-semibold text-lg
+          hover:shadow-[0_0_7.53px_rgba(215,247,91,1)] transition-all mt-4"
         >
           {isLoading ? "Connexion..." : "Se connecter"}
         </button>
-      </form>
-
-      <div className="mt-4 text-center">
-        <p className="text-[#22333B]">
-          Pas encore de compte?{" "}
-          <span className="text-[#D7F75B] cursor-pointer">S'inscrire</span>
-        </p>
       </div>
-    </div>
+    </form>
   );
 }
 

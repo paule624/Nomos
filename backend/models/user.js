@@ -31,6 +31,11 @@ const User = sequelize.define(
       allowNull: false,
       defaultValue: "user",
     },
+    selectedCategories: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: [], // Tableau vide par défaut
+    },
   },
   {
     tableName: "Users",

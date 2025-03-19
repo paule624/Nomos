@@ -1,13 +1,59 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import categoriesData from "/Data/categories.json";
-import DetailCategories from "../sections/Detail_Categories";
 
-function Categories({ setActiveTab, setSelectedCategoryId }) {
+function Preferences({ setShowPreferences }) {
   const [categories, setCategories] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Récupérer l'ID utilisateur du localStorage
+  const userStr = localStorage.getItem("user");
+  const user = userStr ? JSON.parse(userStr) : null;
+  const userId = user?.id;
+
+  // Gérer la sélection/désélection d'une catégorie
+  const toggleCategory = (categoryId) => {
+    setSelectedCategories((prev) => {
+      if (prev.includes(categoryId)) {
+        return prev.filter((id) => id !== categoryId);
+      } else {
+        return [...prev, categoryId];
+      }
+    });
+  };
+
+  // Sauvegarder les préférences
+  const savePreferences = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `http://localhost:3000/users/${userId}`,
+        {
+          selectedCategories: selectedCategories,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setShowPreferences(false); // Retour au profil après sauvegarde
+    } catch (error) {
+      console.error("Error saving preferences:", error);
+      setError("Failed to save preferences");
+    }
+  };
+
+  const handleBack = () => {
+    setShowPreferences(false); // Retour au profil
+  };
+
+  const filteredCategories = categories.filter((category) =>
+    category.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -16,24 +62,15 @@ function Categories({ setActiveTab, setSelectedCategoryId }) {
 
         // Map backend categories with local data
         const mappedCategories = response.data.map((backendCategory) => {
-          // Find matching category in local data by ID
           const localCategory = categoriesData.find(
             (cat) => cat.id === backendCategory.id
           );
 
-          // Extract category name from the icon path if local match is found
-          let categoryName = backendCategory.name;
-          if (localCategory) {
-            const iconPath = localCategory.icon;
-            const iconName = iconPath.split("/").pop().split(".")[0];
-            categoryName = iconName;
-          }
-
-          // Merge backend data with local data
           return {
             ...backendCategory,
-            name: categoryName,
+            name: backendCategory.name,
             color: localCategory ? localCategory.color : "#CCCCCC",
+            dark_color: localCategory ? localCategory.dark_color : "#22333B", // Ajout de dark_color
             icon: localCategory
               ? localCategory.icon
               : "/assets/icons/default.svg",
@@ -52,18 +89,33 @@ function Categories({ setActiveTab, setSelectedCategoryId }) {
     fetchCategories();
   }, []);
 
-  const handleBack = () => {
-    setActiveTab("actualites"); // Retour à l'onglet actualités
-  };
+  // Charger les catégories sélectionnées de l'utilisateur
+  useEffect(() => {
+    const fetchUserPreferences = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          `http://localhost:3000/users/${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-  const handleCategoryClick = (categoryId) => {
-    setSelectedCategoryId(categoryId);
-    setActiveTab("detail_categories");
-  };
+        // Initialiser selectedCategories avec les préférences existantes
+        if (response.data.selectedCategories) {
+          setSelectedCategories(response.data.selectedCategories);
+        }
+      } catch (error) {
+        console.error("Error fetching user preferences:", error);
+      }
+    };
 
-  const filteredCategories = categories.filter((category) =>
-    category.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    if (userId) {
+      fetchUserPreferences();
+    }
+  }, [userId]);
 
   if (loading) {
     return (
@@ -90,7 +142,7 @@ function Categories({ setActiveTab, setSelectedCategoryId }) {
   }
 
   return (
-    <div className="px-6 py-4 w-full ">
+    <div className="px-6 py-4 w-full">
       <div className="hero flex justify-center relative drop-shadow-[0_3px_7.7px_rgba(0,0,0,0.25)] mt-5">
         <button
           onClick={handleBack}
@@ -144,13 +196,12 @@ function Categories({ setActiveTab, setSelectedCategoryId }) {
       <p className="text-s italic">
         Vous pouvez retrouvez tout les articles de Nomos dans le catalogue.
       </p>
-      <div className="flex flex-col space-y-4 w-full cursor-pointer">
+      <div className="flex flex-col space-y-4 w-full mb-20">
         {filteredCategories.map((category) => (
           <div
             key={category.id}
             className="w-full p-2 rounded-full shadow-md transition-all hover:shadow-lg flex items-center justify-between"
             style={{ backgroundColor: `${category.color}` }}
-            onClick={() => handleCategoryClick(category.id)}
           >
             <div className="flex items-center">
               <div
@@ -168,27 +219,39 @@ function Categories({ setActiveTab, setSelectedCategoryId }) {
               </h2>
             </div>
 
-            <div className="bg-white/50 w-12 h-12 rounded-full flex items-center justify-center">
-              <svg
-                className="w-6 h-6 text-[#22333B]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </div>
+            <button
+              onClick={() => toggleCategory(category.id)}
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                selectedCategories.includes(category.id) ? "text-white" : ""
+              }`}
+              style={{
+                backgroundColor: selectedCategories.includes(category.id)
+                  ? category.dark_color
+                  : "#F2F4F3",
+              }}
+            >
+              {selectedCategories.includes(category.id) ? (
+                <svg className="w-6 h-6" viewBox="0 0 72 55" fill="none">
+                  <path
+                    d="M22.8361 30.0068L13.1773 20.2264C10.9605 17.9816 7.37424 17.9816 5.15739 20.2264L1.66655 23.7612C-0.550307 26.006 -0.550307 29.6374 1.66655 31.8822L22.8417 53.3241C25.0585 55.5689 28.6448 55.5689 30.8617 53.3241L38.3653 45.726L70.3441 13.3443C72.5609 11.0995 72.5609 7.46807 70.3441 5.22329L66.8532 1.68847C64.6364 -0.556313 61.0501 -0.556313 58.8333 1.68847L30.8617 30.0125C28.6448 32.2573 25.0585 32.2573 22.8417 30.0125L22.8361 30.0068Z"
+                    fill="#F2F4F3"
+                  />
+                </svg>
+              ) : null}
+            </button>
           </div>
         ))}
       </div>
+
+      {/* Bouton de sauvegarde fixe en bas */}
+      <button
+        onClick={savePreferences}
+        className="w-full py-3 bg-[#22333B] text-white rounded-full font-semibold hover:bg-[#22333B]/90 transition-colors"
+      >
+        Sauvegarder mes préférences
+      </button>
     </div>
   );
 }
 
-export default Categories;
+export default Preferences;

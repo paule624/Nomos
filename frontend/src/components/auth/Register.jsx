@@ -3,7 +3,6 @@ import axios from "axios";
 
 function Register({ onRegisterSuccess }) {
   const [formData, setFormData] = useState({
-    username: "",
     email: "",
     password: "",
   });
@@ -24,16 +23,14 @@ function Register({ onRegisterSuccess }) {
 
     try {
       const response = await axios.post("http://localhost:3000/auth/register", {
-        username: formData.username,
         email: formData.email,
         password: formData.password,
       });
-
-      // Notify parent component about successful registration
       if (onRegisterSuccess) onRegisterSuccess(response.data);
     } catch (err) {
       setError(
-        err.response?.data?.message || "An error occurred during registration"
+        err.response?.data?.message ||
+          "Une erreur est survenue lors de l'inscription"
       );
     } finally {
       setIsLoading(false);
@@ -41,32 +38,16 @@ function Register({ onRegisterSuccess }) {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-[Bold_Dispo] mb-6 text-center text-[#22333B]">
-        Inscription
-      </h2>
-
+    <form onSubmit={handleSubmit} className="w-full">
       {error && (
-        <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">{error}</div>
+        <div className="mb-6 p-3 bg-red-100/50 backdrop-blur-sm text-red-700 rounded-xl text-center">
+          {error}
+        </div>
       )}
 
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-[#22333B] mb-2" htmlFor="username">
-            Nom d'utilisateur
-          </label>
-          <input
-            id="username"
-            type="text"
-            value={formData.username}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-[#D7F75B]"
-            required
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-[#22333B] mb-2" htmlFor="email">
+      <div className="space-y-6">
+        <div>
+          <label className="block text-[#22333B] text-lg mb-2" htmlFor="email">
             Email
           </label>
           <input
@@ -74,13 +55,18 @@ function Register({ onRegisterSuccess }) {
             type="email"
             value={formData.email}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-[#D7F75B]"
+            className="w-full p-3 bg-white/50 backdrop-blur-sm border-2 border-[#22333B]/10 rounded-xl 
+            focus:outline-none focus:border-[#D7F75B] focus:shadow-[0_0_7.53px_rgba(215,247,91,0.7)] 
+            transition-all"
             required
           />
         </div>
 
-        <div className="mb-4">
-          <label className="block text-[#22333B] mb-2" htmlFor="password">
+        <div>
+          <label
+            className="block text-[#22333B] text-lg mb-2"
+            htmlFor="password"
+          >
             Mot de passe
           </label>
           <input
@@ -88,7 +74,9 @@ function Register({ onRegisterSuccess }) {
             type="password"
             value={formData.password}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-[#D7F75B]"
+            className="w-full p-3 bg-white/50 backdrop-blur-sm border-2 border-[#22333B]/10 rounded-xl 
+            focus:outline-none focus:border-[#D7F75B] focus:shadow-[0_0_7.53px_rgba(215,247,91,0.7)] 
+            transition-all"
             required
           />
         </div>
@@ -96,19 +84,13 @@ function Register({ onRegisterSuccess }) {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-[#22333B] text-white py-2 rounded hover:bg-[#22333B]/90 transition-colors"
+          className="w-full bg-[#D7F75B] text-[#22333B] py-3 px-6 rounded-xl font-semibold text-lg
+          hover:shadow-[0_0_7.53px_rgba(215,247,91,1)] transition-all mt-4"
         >
           {isLoading ? "Inscription..." : "S'inscrire"}
         </button>
-      </form>
-
-      <div className="mt-4 text-center">
-        <p className="text-[#22333B]">
-          Déjà un compte?{" "}
-          <span className="text-[#D7F75B] cursor-pointer">Se connecter</span>
-        </p>
       </div>
-    </div>
+    </form>
   );
 }
 

@@ -1,12 +1,31 @@
-# React + Vite
+Nomos
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Nomos
 
-Currently, two official plugins are available:
+Nomos est une application innovante pensée pour réconcilier les utilisateurs avec l’information, dans un contexte où les médias traditionnels peinent à convaincre et où les fake news pullulent. L’objectif principal est de proposer un espace neutre, accessible et intuitif pour consulter l’actualité. Nomos invite les étudiants en développement web à imaginer des fonctionnalités interactives et des optimisations pour rendre l’application encore plus attrayante et adaptée aux besoins de ses utilisateurs.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Techno
 
-## Expanding the ESLint configuration
+Je pense utilisé les techno suivantes :
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Front-end : React, Tailwind CSS, JS, shadcn/ui
+- Back-end : Node.js, Express
+- Base de données : MongoDB
+- API : RESTful API
+- Authentification : Passport.js
+- Hébergement : Vercel
+
+## To do :
+
+Nb page : 8
+
+- Page de connexion
+- Mes centres d'intérêts
+- Le catalogue
+- Actualités
+- Pour toi
+- Profil
+- Mes likés
+- Mes préférences
+
+Algo de recommandation

@@ -2,46 +2,55 @@
   {
     "id": "ca8e0975-4fac-4715-a35e-4c2ee9d3290d",
     "color": "#4BC786",
-    "icon": "../src/assets/Categories/Environnement.svg"
+    "icon": "../src/assets/Categories/Environnement.svg",
+    "dark_color":"#155F56"
   },
   {
     "id": "43c2dead-646a-4fdc-8ac6-8e1f22abc772",
     "color": "#FA9567",
-    "icon": "../src/assets/Categories/Sport.svg"
+    "icon": "../src/assets/Categories/Sport.svg",
+    "dark_color":"#D55C1F"
   },
   {
     "id": "4dd30eca-3e26-453f-84a6-e7b94ae0e115",
     "color": "#559FF8",
-    "icon": "../src/assets/Categories/Politique.svg"
+    "icon": "../src/assets/Categories/Politique.svg",
+    "dark_color":"#1D34FF"
   },
   {
     "id": "8bd9d677-0d86-47f1-ba59-02591daf2fae",
     "color": "#FF6769",
-    "icon": "../src/assets/Categories/Sante.svg"
+    "icon": "../src/assets/Categories/Sante.svg",
+    "dark_color":"#CC1F1F"
   },
   {
     "id": "8f72eb38-9438-47a6-a07f-d3cb3ef1b058",
     "color": "#F3E093",
-    "icon": "../src/assets/Categories/Insolite.svg"
+    "icon": "../src/assets/Categories/Insolite.svg",
+    "dark_color":"#E6C150"
   },
   {
     "id": "625f094f-a34e-4423-b1e9-d0567e9eff8f",
     "color": "#CF9AF1",
-    "icon": "../src/assets/Categories/Education.svg"
+    "icon": "../src/assets/Categories/Education.svg",
+    "dark_color":"#8C3EBD"
   },
   {
     "id": "c434aa1f-4fb3-4ef4-9bb0-5a37176f6109",
     "color": "#FFABCA",
-    "icon": "../src/assets/Categories/Positif.svg"
+    "icon": "../src/assets/Categories/Positif.svg",
+    "dark_color":"#FF69A0"
   },
   {
     "id": "1c7eb61b-27c2-4e90-8995-258c0cb7b011",
     "color": "#AE8C6C",
-    "icon": "../src/assets/Categories/Histoire.svg"
+    "icon": "../src/assets/Categories/Histoire.svg",
+    "dark_color":"#754B47"
   },
   {
     "id": "3cf03a56-6bd2-4b36-8d92-5593bb28b7b5",
     "color": "#D9D9D9",
-    "icon": "../src/assets/Categories/Science & Techno.svg"
+    "icon": "../src/assets/Categories/Science & Techno.svg",
+    "dark_color":"#4B4B4B"
   }
 ]
