@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 
+// Importation des routes
 const userRoutes = require("../routes/userRoutes");
 const articleRoutes = require("../routes/articleRoutes");
 const recommendationRoutes = require("../routes/recommendationRoutes");
@@ -10,11 +11,25 @@ const authRoutes = require("../routes/authRoutes");
 const reactionRoutes = require("../routes/reactionRoutes");
 const app = express();
 
+// Configuration CORS pour production et développement
+const corsOptions = {
+  origin: [
+    process.env.FRONTEND_URL, // Frontend en production (depuis .env)
+    "http://localhost:5173", // Frontend en développement (Vite)
+    "http://localhost:3000", // En cas d'utilisation sur un autre port local
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+
+// Middleware personnalisé pour CORS
 app.use((req, res, next) => {
+  // Origines autorisées
   const allowedOrigins = [
-    "https://nomos-project.vercel.app",
-    "http://localhost:5173",
-    "http://localhost:3000",
+    process.env.FRONTEND_URL, // Frontend en production (depuis .env)
+    "http://localhost:5173", // Frontend en développement (Vite)
+    "http://localhost:3000", // En cas d'utilisation sur un autre port local
   ];
 
   const origin = req.headers.origin;
@@ -22,6 +37,7 @@ app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
 
+  // Permettre les en-têtes et méthodes nécessaires
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, PUT, DELETE, PATCH, OPTIONS"
@@ -29,6 +45,7 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.setHeader("Access-Control-Allow-Credentials", "true");
 
+  // Prétraiter les requêtes OPTIONS
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
@@ -36,6 +53,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// Middleware (après notre middleware CORS personnalisé)
 app.use(express.json());
 
 // Routes
