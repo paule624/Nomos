@@ -1,5 +1,5 @@
 const { Sequelize, DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
+const { sequelize } = require("../config/database");
 
 const Category = sequelize.define(
   "Category",
@@ -25,10 +25,10 @@ const Category = sequelize.define(
     },
   },
   {
-    tableName: 'Categories', // Utilise le bon nom de table
+    tableName: "Categories", // Utilise le bon nom de table
     timestamps: true, // Active les timestamps
-    createdAt: 'created_at', // Nom de la colonne `created_at`
-    updatedAt: 'updated_at', // Nom de la colonne `updated_at`
+    createdAt: "created_at", // Nom de la colonne `created_at`
+    updatedAt: "updated_at", // Nom de la colonne `updated_at`
   }
 );
 

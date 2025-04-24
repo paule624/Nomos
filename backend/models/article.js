@@ -1,5 +1,5 @@
 const { Sequelize, DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
+const { sequelize } = require("../config/database");
 const CloudinaryImage = require("./cloudinaryImage");
 const Category = require("./category");
 const User = require("./user");

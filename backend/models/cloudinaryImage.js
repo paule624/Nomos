@@ -1,6 +1,6 @@
 // models/cloudinaryImage.js
 const { Sequelize, DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
+const { sequelize } = require("../config/database");
 
 const CloudinaryImage = sequelize.define(
   "CloudinaryImage",
@@ -15,7 +15,7 @@ const CloudinaryImage = sequelize.define(
       allowNull: false,
     },
     public_id: {
-      type: DataTypes.STRING(255), 
+      type: DataTypes.STRING(255),
       allowNull: false,
       unique: true,
     },
@@ -33,9 +33,9 @@ const CloudinaryImage = sequelize.define(
     },
   },
   {
-    tableName: 'CloudinaryImages',
+    tableName: "CloudinaryImages",
     timestamps: true, // Active les timestamps pour gérer `createdAt` et `updatedAt` automatiquement
-    createdAt: 'created_at', // Nom de la colonne `created_at`
+    createdAt: "created_at", // Nom de la colonne `created_at`
   }
 );
 

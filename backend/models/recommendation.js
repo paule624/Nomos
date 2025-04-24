@@ -1,5 +1,5 @@
 const { Sequelize, DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
+const { sequelize } = require("../config/database");
 const User = require("./user");
 const Article = require("./article");
 
@@ -30,26 +30,7 @@ const Recommendation = sequelize.define(
   }
 );
 
-// Relation avec Users
-Recommendation.belongsTo(User, {
-  foreignKey: "user_id",
-  as: "user",
-  constraints: false, // Désactiver temporairement les contraintes
-});
-
-// Relation avec Articles
-Recommendation.belongsTo(Article, {
-  foreignKey: "article_id",
-  as: "article",
-  constraints: false, // Désactiver temporairement les contraintes
-});
-
-// Synchroniser sans alter pour éviter les problèmes de contraintes
-sequelize
-  .sync({ alter: false })
-  .then(() => console.log("Recommendation table synchronized"))
-  .catch((err) =>
-    console.error("Error synchronizing Recommendation table:", err)
-  );
+// Les associations seront gérées dans models/index.js
+// Suppression de la synchronisation ici car elle est gérée dans server.js
 
 module.exports = Recommendation;

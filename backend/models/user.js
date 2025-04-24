@@ -1,5 +1,5 @@
 const { Sequelize, DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
+const { sequelize } = require("../config/database");
 
 const User = sequelize.define(
   "User",
@@ -20,11 +20,11 @@ const User = sequelize.define(
     },
     first_name: {
       type: DataTypes.STRING,
-      allowNull: true, // Changed from false to true
+      allowNull: true,
     },
     last_name: {
       type: DataTypes.STRING,
-      allowNull: true, // Changed from false to true
+      allowNull: true,
     },
     role: {
       type: DataTypes.STRING,
@@ -34,7 +34,7 @@ const User = sequelize.define(
     selectedCategories: {
       type: DataTypes.JSON,
       allowNull: true,
-      defaultValue: [], // Tableau vide par défaut
+      defaultValue: [],
     },
   },
   {
@@ -45,10 +45,10 @@ const User = sequelize.define(
   }
 );
 
-// Synchronisation avec la base de données
-sequelize
-  .sync({ alter: true }) // Using alter:true to update the table structure
-  .then(() => console.log("User table updated successfully"))
-  .catch((err) => console.error("Error updating User table:", err));
+// Commentez la synchronisation ici car nous la gérons dans server.js
+// sequelize
+//   .sync({ alter: true })
+//   .then(() => console.log("User table updated successfully"))
+//   .catch((err) => console.error("Error updating User table:", err));
 
 module.exports = User;

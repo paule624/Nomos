@@ -1,61 +1,81 @@
-require("dotenv").config();
+// Charger le bon fichier d'environnement selon NODE_ENV
+require("dotenv").config({
+  path: `.env.${process.env.NODE_ENV || "development"}`,
+});
 
 const app = require("./config/app");
-const sequelize = require("./config/database");
-
+const { sequelize, testConnection } = require("./config/database");
+// Importer tous les modèles depuis l'index
 const models = require("./models");
 
+// Initialiser la base de données de façon plus robuste
 async function initializeDatabase() {
   try {
-    await sequelize.authenticate();
-    console.log("Connection to database has been established successfully.");
+    const connected = await testConnection();
 
-    // et conserver les données existantes
-    await sequelize.sync({ force: false, alter: false });
-    console.log("Database synchronization check completed");
-    return true;
+    if (connected) {
+      // Utiliser force: false, alter: false pour éviter les problèmes de contraintes
+      // et conserver les données existantes
+      await sequelize.sync({ force: false, alter: false });
+      console.log("Database synchronization check completed");
+      return true;
+    } else {
+      console.log("Database connection failed, but continuing...");
+      return false;
+    }
   } catch (error) {
-    console.error("Unable to connect to the database:", error);
+    console.error("Error during database initialization:", error);
+    // En production, on ne veut pas échouer complètement si la DB n'est pas accessible immédiatement
     console.log("Database initialization error, but continuing...");
     return false;
   }
 }
 
-app.get("/api/status", (req, res) => {
-  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+// Ajouter une route de statut/santé pour vérifier si le serveur fonctionne
+app.get("/status", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    environment: process.env.NODE_ENV || "development",
+    timestamp: new Date().toISOString(),
+  });
 });
 
-// Gestionnaire pour les routes 404 qui renvoie les routes disponibles
-// Doit être défini après toutes les autres routes
-app.use((req, res) => {
-  // Collecte de toutes les routes disponibles
-  const routes = [];
-
-  // Parcourir les routes d'Express
-  app._router.stack.forEach((middleware) => {
-    if (middleware.route) {
-      // Routes directement attachées à l'application
-      routes.push(middleware.route.path);
-    } else if (middleware.name === "router") {
-      // Routes des routeurs (comme articleRoutes, userRoutes, etc.)
-      middleware.handle.stack.forEach((handler) => {
-        if (handler.route) {
-          let path = "";
-          // Reconstruire le chemin complet en combinant le préfixe du routeur et le chemin de la route
-          if (middleware.regexp && middleware.regexp.source) {
-            const match = middleware.regexp.source.match(/^\\\/([^\\\/]+)/);
-            if (match) {
-              path = "/" + match[1];
-            }
-          }
-          routes.push(path + handler.route.path);
-        }
-      });
-    }
+// Pour les environnements non serverless (développement local)
+if (process.env.NODE_ENV !== "production") {
+  // Initialiser la base de données et démarrer le serveur local
+  initializeDatabase().then(() => {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(
+        `Server running on port ${PORT} in ${
+          process.env.NODE_ENV || "development"
+        } mode`
+      );
+    });
   });
+} else {
+  // En production (Vercel), initialisation au premier démarrage
+  // mais on n'attend pas que ça se termine pour exporter l'app
+  initializeDatabase().catch((err) => {
+    console.error("Database initialization failed in production:", err);
+  });
+}
 
-  // Trier et filtrer les doublons
-  const availableRoutes = [...new Set(routes)].sort();
+// Gestionnaire de route par défaut
+app.use((req, res) => {
+  // Liste statique des routes principales
+  const availableRoutes = [
+    "/articles",
+    "/users",
+    "/categories",
+    "/auth/login",
+    "/auth/register",
+    "/recommendations",
+    "/upload",
+    "/reactions",
+    "/cloudinary-images",
+    "/status",
+  ];
 
   res.status(404).json({
     message: `Route ${req.path} not found`,
@@ -63,17 +83,5 @@ app.use((req, res) => {
   });
 });
 
-if (process.env.NODE_ENV !== "production") {
-  initializeDatabase().then(() => {
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  });
-} else {
-  initializeDatabase().catch((err) => {
-    console.error("Database initialization failed in production:", err);
-  });
-}
-
+// Exporter l'application pour Vercel
 module.exports = app;

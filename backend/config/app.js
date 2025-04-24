@@ -11,31 +11,26 @@ const authRoutes = require("../routes/authRoutes");
 const reactionRoutes = require("../routes/reactionRoutes");
 const app = express();
 
-// Configuration CORS pour production et développement
-const corsOptions = {
-  origin: [
-    process.env.FRONTEND_URL, // Frontend en production (depuis .env)
-    "https://nomos-seven.vercel.app", // Nouvelle URL du frontend
-    "https://nomos-project.vercel.app", // Ancienne URL du frontend
-    "http://localhost:5173", // Frontend en développement (Vite)
-    "http://localhost:3000", // En cas d'utilisation sur un autre port local
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-};
+// Déterminer les origines autorisées en fonction de l'environnement
+let allowedOrigins = [];
+if (process.env.NODE_ENV === "production") {
+  // En production, utiliser l'URL du frontend depuis .env
+  allowedOrigins = [
+    process.env.FRONTEND_URL,
+    "https://nomos-seven.vercel.app",
+    "https://nomos-project.vercel.app",
+  ];
+  console.log("CORS configuré pour l'environnement de production");
+} else {
+  // En développement, autoriser localhost
+  allowedOrigins = ["http://localhost:5173", "http://localhost:3000"];
+  console.log("CORS configuré pour l'environnement de développement");
+}
+
+console.log("Origines autorisées:", allowedOrigins);
 
 // Middleware personnalisé pour CORS
 app.use((req, res, next) => {
-  // Origines autorisées
-  const allowedOrigins = [
-    process.env.FRONTEND_URL, // Frontend en production (depuis .env)
-    "https://nomos-seven.vercel.app", // Nouvelle URL du frontend
-    "https://nomos-project.vercel.app", // Ancienne URL du frontend
-    "http://localhost:5173", // Frontend en développement (Vite)
-    "http://localhost:3000", // En cas d'utilisation sur un autre port local
-  ];
-
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
@@ -72,7 +67,11 @@ app.use("/reactions", reactionRoutes);
 
 // Ajouter une route pour le statut de l'API
 app.get("/status", (req, res) => {
-  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+  res.status(200).json({
+    status: "ok",
+    environment: process.env.NODE_ENV || "development",
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // Gestionnaire pour les routes 404 qui renvoie les routes disponibles
