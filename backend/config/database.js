@@ -8,21 +8,48 @@ console.log(`Mode: ${isProduction ? "Production" : "Développement"}`);
 // Configuration de la base de données
 let sequelize;
 
-// Utiliser les variables Supabase à la fois en production et en développement
-// puisque .env.development contient les informations Supabase
 try {
-  console.log("Tentative de connexion à Supabase...");
+  let connectionString;
 
-  // Construire la chaîne de connexion à partir des variables individuelles
-  // ou utiliser DATABASE_URL si elle est fournie
-  let connectionString = process.env.DATABASE_URL;
-
-  if (!connectionString && process.env.SUPABASE_DB_USER) {
-    // Construire la chaîne à partir des variables individuelles
-    connectionString = `postgresql://${process.env.SUPABASE_DB_USER}:${process.env.SUPABASE_DB_PASSWORD}@${process.env.SUPABASE_DB_HOST}:${process.env.SUPABASE_DB_PORT}/${process.env.SUPABASE_DB_NAME}`;
+  if (isProduction) {
     console.log(
-      "Chaîne de connexion construite à partir des variables individuelles SUPABASE_*"
+      "Tentative de connexion à Supabase via Transaction Pooler (idéal pour Vercel serverless)..."
     );
+
+    // En production, utiliser le Transaction Pooler de Supabase (recommandé pour les environnements serverless)
+    connectionString =
+      process.env.DATABASE_URL ||
+      "postgresql://postgres.hrzzkzqevlbaycllebhb:[YOUR-PASSWORD]@aws-0-eu-west-3.pooler.supabase.com:6543/postgres";
+
+    // Remplacer [YOUR-PASSWORD] par le mot de passe réel si défini dans l'environnement
+    if (
+      connectionString.includes("[YOUR-PASSWORD]") &&
+      process.env.SUPABASE_DB_PASSWORD
+    ) {
+      connectionString = connectionString.replace(
+        "[YOUR-PASSWORD]",
+        process.env.SUPABASE_DB_PASSWORD
+      );
+    }
+  } else {
+    console.log(
+      "Tentative de connexion à Supabase via connexion directe (développement)..."
+    );
+
+    // En développement, utiliser la connexion directe
+    connectionString = process.env.DATABASE_URL;
+
+    if (
+      !connectionString &&
+      process.env.SUPABASE_DB_USER &&
+      process.env.SUPABASE_DB_PASSWORD
+    ) {
+      // Construire la chaîne à partir des variables individuelles pour la connexion directe
+      connectionString = `postgresql://${process.env.SUPABASE_DB_USER}:${process.env.SUPABASE_DB_PASSWORD}@db.hrzzkzqevlbaycllebhb.supabase.co:5432/postgres`;
+      console.log(
+        "Chaîne de connexion directe construite à partir des variables individuelles SUPABASE_*"
+      );
+    }
   }
 
   if (!connectionString) {
@@ -41,14 +68,20 @@ try {
     },
     logging: false,
     pool: {
-      max: 3,
+      max: isProduction ? 10 : 3, // Plus de connexions en production
       min: 0,
       acquire: 30000,
       idle: 10000,
     },
   });
 
-  console.log("Configuration Supabase initialisée");
+  console.log(
+    `Configuration Supabase initialisée en mode ${
+      isProduction
+        ? "production (Transaction Pooler)"
+        : "développement (connexion directe)"
+    }`
+  );
 } catch (error) {
   console.error(
     "Erreur lors de l'initialisation de la configuration Supabase:",
