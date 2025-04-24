@@ -8,84 +8,53 @@ console.log(`Mode: ${isProduction ? "Production" : "Développement"}`);
 // Configuration de la base de données
 let sequelize;
 
-if (isProduction) {
-  // PRODUCTION - Supabase avec URL de connexion complète
+// Utiliser les variables Supabase à la fois en production et en développement
+// puisque .env.development contient les informations Supabase
+try {
   console.log("Tentative de connexion à Supabase...");
 
-  try {
-    // Construire la chaîne de connexion à partir des variables individuelles
-    // ou utiliser DATABASE_URL si elle est fournie
-    let connectionString = process.env.DATABASE_URL;
+  // Construire la chaîne de connexion à partir des variables individuelles
+  // ou utiliser DATABASE_URL si elle est fournie
+  let connectionString = process.env.DATABASE_URL;
 
-    if (!connectionString && process.env.SUPABASE_DB_USER) {
-      // Construire la chaîne à partir des variables individuelles
-      connectionString = `postgresql://${process.env.SUPABASE_DB_USER}:${process.env.SUPABASE_DB_PASSWORD}@${process.env.SUPABASE_DB_HOST}:${process.env.SUPABASE_DB_PORT}/${process.env.SUPABASE_DB_NAME}`;
-      console.log(
-        "Chaîne de connexion construite à partir des variables individuelles"
-      );
-    }
-
-    if (!connectionString) {
-      throw new Error(
-        "Aucune information de connexion à la base de données n'est disponible"
-      );
-    }
-
-    sequelize = new Sequelize(connectionString, {
-      dialect: "postgres",
-      dialectOptions: {
-        ssl: {
-          require: true,
-          rejectUnauthorized: false,
-        },
-      },
-      logging: false,
-      pool: {
-        max: 3,
-        min: 0,
-        acquire: 30000,
-        idle: 10000,
-      },
-    });
-
-    console.log("Configuration Supabase initialisée");
-  } catch (error) {
-    console.error(
-      "Erreur lors de l'initialisation de la configuration Supabase:",
-      error
-    );
-    throw error;
-  }
-} else {
-  // DÉVELOPPEMENT - Base locale
-  console.log("Connexion à la base de données locale");
-
-  try {
-    // Utiliser des valeurs par défaut pour le développement si les variables d'environnement ne sont pas définies
-    const dbName = process.env.DB_NAME || "Nomos_bdd";
-    const dbUser = process.env.DB_USER || "postgres";
-    const dbPassword = process.env.DB_PASSWORD || "paule624"; // Mot de passe corrigé
-    const dbHost = process.env.DB_HOST || "localhost";
-    const dbPort = process.env.DB_PORT || 5432;
-
+  if (!connectionString && process.env.SUPABASE_DB_USER) {
+    // Construire la chaîne à partir des variables individuelles
+    connectionString = `postgresql://${process.env.SUPABASE_DB_USER}:${process.env.SUPABASE_DB_PASSWORD}@${process.env.SUPABASE_DB_HOST}:${process.env.SUPABASE_DB_PORT}/${process.env.SUPABASE_DB_NAME}`;
     console.log(
-      `Configuration DB locale: ${dbUser}@${dbHost}:${dbPort}/${dbName}`
+      "Chaîne de connexion construite à partir des variables individuelles SUPABASE_*"
     );
-
-    sequelize = new Sequelize(dbName, dbUser, dbPassword, {
-      host: dbHost,
-      port: dbPort,
-      dialect: "postgres",
-      logging: false,
-    });
-    console.log("Configuration locale initialisée");
-  } catch (error) {
-    console.error(
-      "Erreur lors de l'initialisation de la configuration locale:",
-      error
-    );
-    throw error;
   }
+
+  if (!connectionString) {
+    throw new Error(
+      "Aucune information de connexion à la base de données n'est disponible"
+    );
+  }
+
+  sequelize = new Sequelize(connectionString, {
+    dialect: "postgres",
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
+    },
+    logging: false,
+    pool: {
+      max: 3,
+      min: 0,
+      acquire: 30000,
+      idle: 10000,
+    },
+  });
+
+  console.log("Configuration Supabase initialisée");
+} catch (error) {
+  console.error(
+    "Erreur lors de l'initialisation de la configuration Supabase:",
+    error
+  );
+  throw error;
 }
 
 // Fonction pour tester la connexion
