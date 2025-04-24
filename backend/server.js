@@ -23,10 +23,16 @@ async function initializeDatabase() {
   }
 }
 
-initializeDatabase();
+// Pour les environnements non serverless (développement local)
+if (process.env.NODE_ENV !== "production") {
+  initializeDatabase();
 
-// Démarrer le serveur
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+  // Démarrer le serveur en local
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+// Exporter l'application pour Vercel
+module.exports = app;
