@@ -61,17 +61,23 @@ if (isProduction) {
   console.log("Connexion à la base de données locale");
 
   try {
-    sequelize = new Sequelize(
-      process.env.DB_NAME,
-      process.env.DB_USER,
-      process.env.DB_PASSWORD,
-      {
-        host: process.env.DB_HOST,
-        port: process.env.DB_PORT,
-        dialect: "postgres",
-        logging: false,
-      }
+    // Utiliser des valeurs par défaut pour le développement si les variables d'environnement ne sont pas définies
+    const dbName = process.env.DB_NAME || "Nomos_bdd";
+    const dbUser = process.env.DB_USER || "postgres";
+    const dbPassword = process.env.DB_PASSWORD || "paule624"; // Mot de passe corrigé
+    const dbHost = process.env.DB_HOST || "localhost";
+    const dbPort = process.env.DB_PORT || 5432;
+
+    console.log(
+      `Configuration DB locale: ${dbUser}@${dbHost}:${dbPort}/${dbName}`
     );
+
+    sequelize = new Sequelize(dbName, dbUser, dbPassword, {
+      host: dbHost,
+      port: dbPort,
+      dialect: "postgres",
+      logging: false,
+    });
     console.log("Configuration locale initialisée");
   } catch (error) {
     console.error(

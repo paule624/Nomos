@@ -113,9 +113,12 @@ const register = async (req, res) => {
 // Connexion d'un utilisateur
 const login = async (req, res) => {
   try {
+    console.log("Tentative de connexion avec email:", req.body.email);
+
     const { email, password } = req.body;
 
     if (!email || !password) {
+      console.log("Email ou mot de passe manquant");
       return res.status(400).json({
         message: "Email et mot de passe requis",
         success: false,
@@ -125,13 +128,16 @@ const login = async (req, res) => {
     // Vérifier si l'utilisateur existe
     let user;
     try {
+      console.log("Recherche de l'utilisateur dans la base de données...");
       user = await User.findOne({ where: { email } });
       if (!user) {
+        console.log("Utilisateur non trouvé:", email);
         return res.status(401).json({
           message: "Email ou mot de passe incorrect",
           success: false,
         });
       }
+      console.log("Utilisateur trouvé avec l'ID:", user.id);
     } catch (dbError) {
       console.error("Erreur lors de la recherche de l'utilisateur:", dbError);
       return res.status(500).json({
@@ -146,13 +152,16 @@ const login = async (req, res) => {
     // Vérifier le mot de passe
     let isPasswordValid;
     try {
+      console.log("Vérification du mot de passe...");
       isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
+        console.log("Mot de passe invalide pour:", email);
         return res.status(401).json({
           message: "Email ou mot de passe incorrect",
           success: false,
         });
       }
+      console.log("Mot de passe valide");
     } catch (bcryptError) {
       console.error(
         "Erreur lors de la vérification du mot de passe:",
@@ -167,12 +176,19 @@ const login = async (req, res) => {
     // Générer un token JWT
     let token;
     try {
+      console.log("Génération du token JWT...");
+      const jwtSecret =
+        process.env.JWT_SECRET ||
+        "2737ef18066ace929a2a5edd8cf8de60a8dffbfd0d8534b079fdc64c12d7b73cf529a7c9f43a65de49d533cf8a3d1487fa8aa7a6574695879d220a632a7369c9";
+
+      console.log("JWT Secret disponible:", !!jwtSecret);
+
       token = jwt.sign(
         { id: user.id, email: user.email, role: user.role },
-        process.env.JWT_SECRET ||
-          "2737ef18066ace929a2a5edd8cf8de60a8dffbfd0d8534b079fdc64c12d7b73cf529a7c9f43a65de49d533cf8a3d1487fa8aa7a6574695879d220a632a7369c9",
+        jwtSecret,
         { expiresIn: "24h" }
       );
+      console.log("Token généré avec succès");
     } catch (tokenError) {
       console.error("Erreur lors de la génération du token:", tokenError);
       return res.status(500).json({
@@ -180,6 +196,8 @@ const login = async (req, res) => {
         success: false,
       });
     }
+
+    console.log("Connexion réussie pour:", email);
 
     res.status(200).json({
       message: "Connexion réussie",

@@ -9,9 +9,17 @@ const app = require("./config/app");
 const { sequelize, testConnection } = require("./config/database");
 const models = require("./models");
 
+// Variable globale pour suivre l'état de la connexion à la base de données
+let databaseInitialized = false;
+
 // Initialiser la base de données de façon plus robuste
 async function initializeDatabase() {
   try {
+    // Si la base de données est déjà initialisée, ne pas refaire le processus
+    if (databaseInitialized) {
+      return true;
+    }
+
     console.log("Tentative de connexion à la base de données...");
     const connected = await testConnection();
 
@@ -20,6 +28,7 @@ async function initializeDatabase() {
       console.log("Synchronisation des modèles...");
       await sequelize.sync({ force: false, alter: false });
       console.log("Database synchronization completed successfully");
+      databaseInitialized = true;
       return true;
     } else {
       console.log("Database connection failed, but continuing...");
@@ -33,12 +42,50 @@ async function initializeDatabase() {
   }
 }
 
+// Middleware pour s'assurer que la base de données est initialisée avant de traiter les requêtes
+app.use(async (req, res, next) => {
+  // Ignorer la route de statut - elle doit toujours fonctionner même sans DB
+  if (req.path === "/status") {
+    return next();
+  }
+
+  try {
+    // Tenter d'initialiser la base de données si ce n'est pas déjà fait
+    if (!databaseInitialized) {
+      const initialized = await initializeDatabase();
+      if (!initialized && req.path !== "/status") {
+        console.error(
+          "La base de données n'est pas initialisée pour la route:",
+          req.path
+        );
+        return res.status(503).json({
+          message:
+            "Service temporairement indisponible. Veuillez réessayer plus tard.",
+          success: false,
+        });
+      }
+    }
+    next();
+  } catch (error) {
+    console.error(
+      "Erreur lors de l'initialisation de la base de données:",
+      error
+    );
+    res.status(503).json({
+      message:
+        "Service temporairement indisponible. Veuillez réessayer plus tard.",
+      success: false,
+    });
+  }
+});
+
 // Ajouter une route de statut/santé pour vérifier si le serveur fonctionne
 app.get("/status", (req, res) => {
   res.status(200).json({
     status: "ok",
     environment: process.env.NODE_ENV || "development",
     timestamp: new Date().toISOString(),
+    databaseInitialized,
   });
 });
 
@@ -56,18 +103,11 @@ if (process.env.NODE_ENV !== "production") {
     });
   });
 } else {
-  // En production (Vercel)
-  // Initialisation au premier démarrage - mais ne bloque pas l'application
-  console.log("Production mode - initializing database in background");
-
-  // Ne pas bloquer le serveur en attendant la connexion à la base de données
-  initializeDatabase().catch((err) => {
-    console.error("Database initialization failed in production:", err);
-  });
+  // En production (Vercel), l'initialisation se fait par le middleware
+  console.log(
+    "Production mode - database will be initialized on first request"
+  );
 }
-
-// Suppression du gestionnaire de route par défaut pour les 404 qui est déjà dans app.js
-// Le gestionnaire app.js sera utilisé car il est déjà configuré dans l'application
 
 // Middleware de gestion d'erreurs globales
 app.use((err, req, res, next) => {
