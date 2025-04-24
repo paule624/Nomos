@@ -10,15 +10,24 @@ let sequelize;
 
 if (isProduction) {
   // PRODUCTION - Supabase avec URL de connexion complète
-  console.log("Tentative de connexion à Supabase via URI...");
+  console.log("Tentative de connexion à Supabase...");
 
   try {
-    // Utiliser la variable d'environnement pour la chaîne de connexion
-    const connectionString = process.env.DATABASE_URL;
+    // Construire la chaîne de connexion à partir des variables individuelles
+    // ou utiliser DATABASE_URL si elle est fournie
+    let connectionString = process.env.DATABASE_URL;
+
+    if (!connectionString && process.env.SUPABASE_DB_USER) {
+      // Construire la chaîne à partir des variables individuelles
+      connectionString = `postgresql://${process.env.SUPABASE_DB_USER}:${process.env.SUPABASE_DB_PASSWORD}@${process.env.SUPABASE_DB_HOST}:${process.env.SUPABASE_DB_PORT}/${process.env.SUPABASE_DB_NAME}`;
+      console.log(
+        "Chaîne de connexion construite à partir des variables individuelles"
+      );
+    }
 
     if (!connectionString) {
       throw new Error(
-        "La variable d'environnement DATABASE_URL n'est pas définie"
+        "Aucune information de connexion à la base de données n'est disponible"
       );
     }
 
@@ -39,7 +48,7 @@ if (isProduction) {
       },
     });
 
-    console.log("Configuration Supabase initialisée avec URI");
+    console.log("Configuration Supabase initialisée");
   } catch (error) {
     console.error(
       "Erreur lors de l'initialisation de la configuration Supabase:",

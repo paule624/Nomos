@@ -11,60 +11,37 @@ const authRoutes = require("../routes/authRoutes");
 const reactionRoutes = require("../routes/reactionRoutes");
 const app = express();
 
-// Déterminer les origines autorisées en fonction de l'environnement
-let allowedOrigins = [];
+// Configuration CORS simplifiée - autoriser toutes les origines en production
+// C'est plus permissif mais résoudra les problèmes de CORS
 if (process.env.NODE_ENV === "production") {
-  // En production, utiliser l'URL du frontend depuis .env
-  allowedOrigins = [
-    process.env.FRONTEND_URL,
-    "https://nomos-seven.vercel.app",
-    "https://nomos-project.vercel.app",
-  ];
-  console.log("CORS configuré pour l'environnement de production");
+  console.log(
+    "Configuration CORS pour la production - toutes origines autorisées"
+  );
+  app.use(
+    cors({
+      origin: "*",
+      methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  );
 } else {
-  // En développement, autoriser localhost
-  allowedOrigins = ["http://localhost:5173", "http://localhost:3000"];
-  console.log("CORS configuré pour l'environnement de développement");
+  // En développement, autoriser seulement localhost
+  console.log("Configuration CORS pour le développement");
+  app.use(
+    cors({
+      origin: ["http://localhost:5173", "http://localhost:3000"],
+      methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+      credentials: true,
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  );
 }
 
-console.log("Origines autorisées:", allowedOrigins);
-
-// Utiliser le middleware cors d'Express directement
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Autoriser les requêtes sans origine (comme les appels mobiles ou curl)
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        console.log("Origine non autorisée:", origin);
-        callback(null, false);
-      }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "X-CSRF-Token",
-      "X-Requested-With",
-      "Accept",
-      "Accept-Version",
-      "Content-Length",
-      "Content-MD5",
-      "Date",
-      "X-Api-Version",
-      "X-User-ID",
-    ],
-  })
-);
-
-// S'assurer que les requêtes OPTIONS sont correctement traitées
-app.options("*", cors());
-
-// Middleware (après CORS)
+// Middleware
 app.use(express.json());
 
 // Routes pour l'API SANS le préfixe /api/
