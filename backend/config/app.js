@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 
-// Importation des routes
 const userRoutes = require("../routes/userRoutes");
 const articleRoutes = require("../routes/articleRoutes");
 const recommendationRoutes = require("../routes/recommendationRoutes");
@@ -11,19 +10,32 @@ const authRoutes = require("../routes/authRoutes");
 const reactionRoutes = require("../routes/reactionRoutes");
 const app = express();
 
-const corsOptions = {
-  origin: [
+app.use((req, res, next) => {
+  const allowedOrigins = [
     "https://nomos-project.vercel.app",
     "http://localhost:5173",
     "http://localhost:3000",
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-};
+  ];
 
-// Middleware
-app.use(cors(corsOptions));
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  next();
+});
+
 app.use(express.json());
 
 // Routes
