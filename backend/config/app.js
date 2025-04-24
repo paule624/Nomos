@@ -11,24 +11,29 @@ const authRoutes = require("../routes/authRoutes");
 const reactionRoutes = require("../routes/reactionRoutes");
 const app = express();
 
+// Configuration CORS pour production et développement
 const corsOptions = {
   origin: [
-    process.env.FRONTEND_URL,
-    "https://nomos-seven.vercel.app",
-    "https://nomos-project.vercel.app",
-    "http://localhost:5173",
-    "http://localhost:3000",
+    process.env.FRONTEND_URL, // Frontend en production (depuis .env)
+    "https://nomos-seven.vercel.app", // Nouvelle URL du frontend
+    "https://nomos-project.vercel.app", // Ancienne URL du frontend
+    "http://localhost:5173", // Frontend en développement (Vite)
+    "http://localhost:3000", // En cas d'utilisation sur un autre port local
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
 
+// Middleware personnalisé pour CORS
 app.use((req, res, next) => {
+  // Origines autorisées
   const allowedOrigins = [
-    process.env.FRONTEND_URL,
-    "http://localhost:5173",
-    "http://localhost:3000",
+    process.env.FRONTEND_URL, // Frontend en production (depuis .env)
+    "https://nomos-seven.vercel.app", // Nouvelle URL du frontend
+    "https://nomos-project.vercel.app", // Ancienne URL du frontend
+    "http://localhost:5173", // Frontend en développement (Vite)
+    "http://localhost:3000", // En cas d'utilisation sur un autre port local
   ];
 
   const origin = req.headers.origin;
@@ -36,6 +41,7 @@ app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
 
+  // Permettre les en-têtes et méthodes nécessaires
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, PUT, DELETE, PATCH, OPTIONS"
@@ -43,6 +49,7 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.setHeader("Access-Control-Allow-Credentials", "true");
 
+  // Prétraiter les requêtes OPTIONS
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
@@ -50,29 +57,38 @@ app.use((req, res, next) => {
   next();
 });
 
+// Middleware (après notre middleware CORS personnalisé)
 app.use(express.json());
 
-app.use("/api/articles", articleRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/categories", categoryRoutes);
-app.use("/api/upload", cloudinaryImageRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/cloudinary-images", cloudinaryImageRoutes);
-app.use("/api/recommendations", recommendationRoutes);
-app.use("/api/reactions", reactionRoutes);
+// Routes pour l'API SANS le préfixe /api/
+app.use("/articles", articleRoutes);
+app.use("/users", userRoutes);
+app.use("/categories", categoryRoutes);
+app.use("/upload", cloudinaryImageRoutes);
+app.use("/auth", authRoutes);
+app.use("/cloudinary-images", cloudinaryImageRoutes);
+app.use("/recommendations", recommendationRoutes);
+app.use("/reactions", reactionRoutes);
 
+// Ajouter une route pour le statut de l'API
+app.get("/status", (req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// Gestionnaire pour les routes 404 qui renvoie les routes disponibles
 app.use((req, res) => {
+  // Liste statique des routes principales
   const availableRoutes = [
-    "/api/articles",
-    "/api/users",
-    "/api/categories",
-    "/api/auth/login",
-    "/api/auth/register",
-    "/api/recommendations",
-    "/api/upload",
-    "/api/reactions",
-    "/api/cloudinary-images",
-    "/api/status",
+    "/articles",
+    "/users",
+    "/categories",
+    "/auth/login",
+    "/auth/register",
+    "/recommendations",
+    "/upload",
+    "/reactions",
+    "/cloudinary-images",
+    "/status",
   ];
 
   res.status(404).json({
