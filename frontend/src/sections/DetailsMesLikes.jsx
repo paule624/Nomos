@@ -15,12 +15,14 @@ function DetailsMesLikes({ setActiveTab }) {
     try {
       const token = localStorage.getItem("token");
       // Récupérer toutes les recommandations
-      const response = await axios.get("http://localhost:3000/reactions", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/reactions`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       // Filtrer les recommandations pour cet utilisateur
       const userRecommendations = response.data.filter(
         (rec) => rec.user_id === userId
@@ -30,7 +32,7 @@ function DetailsMesLikes({ setActiveTab }) {
       if (userRecommendations.length > 0) {
         const articleIds = userRecommendations.map((rec) => rec.article_id);
         const articlesResponse = await axios.get(
-          "http://localhost:3000/articles",
+          `${import.meta.env.VITE_API_URL}/articles`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

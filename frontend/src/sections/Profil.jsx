@@ -22,7 +22,7 @@ function Profil({ setActiveTab }) {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `http://localhost:3000/users/${userId}`,
+        `${import.meta.env.VITE_API_URL}/users/${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -50,7 +50,7 @@ function Profil({ setActiveTab }) {
       const token = localStorage.getItem("token");
       // Récupérer toutes les recommandations
       const response = await axios.get(
-        "http://localhost:3000/recommendations",
+        `${import.meta.env.VITE_API_URL}/recommendations`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -67,7 +67,7 @@ function Profil({ setActiveTab }) {
       if (userRecommendations.length > 0) {
         const articleIds = userRecommendations.map((rec) => rec.article_id);
         const articlesResponse = await axios.get(
-          "http://localhost:3000/articles",
+          `${import.meta.env.VITE_API_URL}/articles`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

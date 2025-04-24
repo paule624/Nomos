@@ -30,7 +30,7 @@ function Preferences({ setShowPreferences }) {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `http://localhost:3000/users/${userId}`,
+        `${import.meta.env.VITE_API_URL}/users/${userId}`,
         {
           selectedCategories: selectedCategories,
         },
@@ -58,7 +58,9 @@ function Preferences({ setShowPreferences }) {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/categories");
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/categories`
+        );
 
         // Map backend categories with local data
         const mappedCategories = response.data.map((backendCategory) => {
@@ -95,7 +97,7 @@ function Preferences({ setShowPreferences }) {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          `http://localhost:3000/users/${userId}`,
+          `${import.meta.env.VITE_API_URL}/users/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
