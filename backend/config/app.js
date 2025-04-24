@@ -56,14 +56,36 @@ app.use((req, res, next) => {
 // Middleware (après notre middleware CORS personnalisé)
 app.use(express.json());
 
-// Routes
-app.use("/articles", articleRoutes);
-app.use("/users", userRoutes);
-app.use("/categories", categoryRoutes);
-app.use("/upload", cloudinaryImageRoutes);
-app.use("/auth", authRoutes);
-app.use("/cloudinary-images", cloudinaryImageRoutes);
-app.use("/recommendations", recommendationRoutes);
-app.use("/reactions", reactionRoutes);
+// Routes pour l'API avec le bon préfixe
+app.use("/api/articles", articleRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/upload", cloudinaryImageRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/cloudinary-images", cloudinaryImageRoutes);
+app.use("/api/recommendations", recommendationRoutes);
+app.use("/api/reactions", reactionRoutes);
+
+// Gestionnaire pour les routes 404 qui renvoie les routes disponibles
+app.use((req, res) => {
+  // Liste statique des routes principales
+  const availableRoutes = [
+    "/api/articles",
+    "/api/users",
+    "/api/categories",
+    "/api/auth/login",
+    "/api/auth/register",
+    "/api/recommendations",
+    "/api/upload",
+    "/api/reactions",
+    "/api/cloudinary-images",
+    "/api/status",
+  ];
+
+  res.status(404).json({
+    message: `Route ${req.path} not found`,
+    availableRoutes,
+  });
+});
 
 module.exports = app;
