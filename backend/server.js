@@ -66,26 +66,8 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-// Gestionnaire de route par défaut pour les 404
-app.use((req, res) => {
-  const availableRoutes = [
-    "/articles",
-    "/users",
-    "/categories",
-    "/auth/login",
-    "/auth/register",
-    "/recommendations",
-    "/upload",
-    "/reactions",
-    "/cloudinary-images",
-    "/status",
-  ];
-
-  res.status(404).json({
-    message: `Route ${req.path} not found`,
-    availableRoutes,
-  });
-});
+// Suppression du gestionnaire de route par défaut pour les 404 qui est déjà dans app.js
+// Le gestionnaire app.js sera utilisé car il est déjà configuré dans l'application
 
 // Middleware de gestion d'erreurs globales
 app.use((err, req, res, next) => {

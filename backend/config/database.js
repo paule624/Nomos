@@ -13,9 +13,14 @@ if (isProduction) {
   console.log("Tentative de connexion à Supabase via URI...");
 
   try {
-    // Chaîne de connexion complète pour Supabase
-    const connectionString =
-      "postgresql://postgres:rUqZIBG8223i2mNO@db.hrzzkzqevlbaycllebhb.supabase.co:5432/postgres";
+    // Utiliser la variable d'environnement pour la chaîne de connexion
+    const connectionString = process.env.DATABASE_URL;
+
+    if (!connectionString) {
+      throw new Error(
+        "La variable d'environnement DATABASE_URL n'est pas définie"
+      );
+    }
 
     sequelize = new Sequelize(connectionString, {
       dialect: "postgres",
@@ -48,12 +53,12 @@ if (isProduction) {
 
   try {
     sequelize = new Sequelize(
-      process.env.DB_NAME || "Nomos_bdd",
-      process.env.DB_USER || "postgres",
-      process.env.DB_PASSWORD || "paule624",
+      process.env.DB_NAME,
+      process.env.DB_USER,
+      process.env.DB_PASSWORD,
       {
-        host: process.env.DB_HOST || "localhost",
-        port: process.env.DB_PORT || 5432,
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
         dialect: "postgres",
         logging: false,
       }
