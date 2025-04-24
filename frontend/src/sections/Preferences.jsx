@@ -193,7 +193,7 @@ function Preferences({ setShowPreferences }) {
         </svg>
       </div>
 
-      <p className="text-s italic">
+      <p className="text-s italic pb-4">
         Vous pouvez retrouvez tout les articles de Nomos dans le catalogue.
       </p>
       <div className="flex flex-col space-y-4 w-full mb-20">

@@ -3,10 +3,13 @@ const express = require("express");
 const router = express.Router();
 const recommendationController = require("../controllers/recommendationController");
 
-// Route pour obtenir tous les utilisateurs
+// Route pour obtenir toutes les recommendations
 router.get("/", recommendationController.getRecommendations);
 
-// Route pour créer un utilisateur
+// Route pour créer une recommendation
 router.post("/", recommendationController.createRecommendation);
+
+// Route pour supprimer une recommendation
+router.delete("/:id", recommendationController.deleteRecommendation);
 
 module.exports = router;

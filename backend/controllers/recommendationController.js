@@ -21,7 +21,20 @@ const getRecommendations = async (req, res) => {
   }
 };
 
+const deleteRecommendation = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const result = await recommendationService.deleteRecommendation(id);
+    res
+      .status(200)
+      .json({ success: true, message: "Recommendation deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createRecommendation,
-  getRecommendations, // Correction du nom de la fonction
+  getRecommendations,
+  deleteRecommendation,
 };

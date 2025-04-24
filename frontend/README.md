@@ -28,4 +28,10 @@ Nb page : 8
 - Mes likés
 - Mes préférences
 
+## Reste à faire
+
 Algo de recommandation
+Mes likés
+Mettre preference après une inscription
+Ajouter des articles
+Mise en prod

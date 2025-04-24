@@ -12,11 +12,14 @@ async function initializeDatabase() {
     await sequelize.authenticate();
     console.log("Connection to database has been established successfully.");
 
-    // Utiliser alter: true pour préserver les données existantes
-    await sequelize.sync({ alter: true });
-    console.log("Database synchronized successfully");
+    // Utiliser force: false, alter: false pour éviter les problèmes de contraintes
+    // et conserver les données existantes
+    await sequelize.sync({ force: false, alter: false });
+    console.log("Database synchronization check completed");
   } catch (error) {
     console.error("Unable to connect to the database:", error);
+    // Continuer l'exécution du serveur même en cas d'erreur de synchronisation
+    console.log("Starting server despite synchronization issues...");
   }
 }
 

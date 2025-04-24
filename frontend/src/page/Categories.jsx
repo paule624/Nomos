@@ -12,7 +12,9 @@ function Categories({ setActiveTab, setSelectedCategoryId }) {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/categories");
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/categories`
+        );
 
         // Map backend categories with local data
         const mappedCategories = response.data.map((backendCategory) => {

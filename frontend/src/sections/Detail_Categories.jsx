@@ -12,7 +12,7 @@ function DetailCategories({ categoryId, onBackClick }) {
     const fetchArticles = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/articles/category/${categoryId}`
+          `${import.meta.env.VITE_API_URL}/articles/category/${categoryId}`
         );
         setArticles(response.data);
         setLoading(false);
