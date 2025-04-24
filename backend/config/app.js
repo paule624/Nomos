@@ -29,30 +29,42 @@ if (process.env.NODE_ENV === "production") {
 
 console.log("Origines autorisées:", allowedOrigins);
 
-// Middleware personnalisé pour CORS
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
+// Utiliser le middleware cors d'Express directement
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Autoriser les requêtes sans origine (comme les appels mobiles ou curl)
+      if (!origin) return callback(null, true);
 
-  // Permettre les en-têtes et méthodes nécessaires
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-  );
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.setHeader("Access-Control-Allow-Credentials", "true");
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        console.log("Origine non autorisée:", origin);
+        callback(null, false);
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-CSRF-Token",
+      "X-Requested-With",
+      "Accept",
+      "Accept-Version",
+      "Content-Length",
+      "Content-MD5",
+      "Date",
+      "X-Api-Version",
+      "X-User-ID",
+    ],
+  })
+);
 
-  // Prétraiter les requêtes OPTIONS
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
+// S'assurer que les requêtes OPTIONS sont correctement traitées
+app.options("*", cors());
 
-  next();
-});
-
-// Middleware (après notre middleware CORS personnalisé)
+// Middleware (après CORS)
 app.use(express.json());
 
 // Routes pour l'API SANS le préfixe /api/
