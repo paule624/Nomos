@@ -10,6 +10,7 @@ function MesLikes({ setShowLikes }) {
   const [expandedArticle, setExpandedArticle] = useState(null);
   const [currentArticleIndex, setCurrentArticleIndex] = useState(0);
   const containerRef = useRef(null);
+  const [forceRefresh, setForceRefresh] = useState(0);
 
   // State pour les événements tactiles
   const [touchStart, setTouchStart] = useState(null);
@@ -19,6 +20,52 @@ function MesLikes({ setShowLikes }) {
   const userStr = localStorage.getItem("user");
   const user = userStr ? JSON.parse(userStr) : null;
   const userId = user?.id;
+
+  // Fonction pour supprimer un article de la liste lorsqu'il est unliké
+  const handleUnlike = useCallback(
+    (event) => {
+      console.log("Event unlike détecté!", event.detail);
+      const unlikedArticleId = parseInt(event.detail.articleId);
+
+      // Force un rechargement complet des articles
+      setForceRefresh((prev) => prev + 1);
+
+      // Mise à jour immédiate de l'UI
+      setLikedArticles((prevArticles) => {
+        const newArticles = prevArticles.filter(
+          (article) => article.id !== unlikedArticleId
+        );
+
+        // Si l'article courant est celui qui a été unliké, ajuster l'index
+        if (
+          currentArticleIndex >= newArticles.length &&
+          currentArticleIndex > 0
+        ) {
+          setCurrentArticleIndex(newArticles.length - 1);
+        }
+
+        // Si tous les articles ont été unlikés, retourner à l'écran précédent
+        if (newArticles.length === 0) {
+          setTimeout(() => setShowLikes(false), 300);
+        }
+
+        return newArticles;
+      });
+    },
+    [currentArticleIndex, setShowLikes]
+  );
+
+  // Ajouter l'écouteur d'événement pour l'unlike avec une dépendance réduite
+  useEffect(() => {
+    console.log("Ajout de l'écouteur d'événement article-unliked");
+    const handleUnlikeEvent = (event) => handleUnlike(event);
+    window.addEventListener("article-unliked", handleUnlikeEvent);
+
+    return () => {
+      console.log("Suppression de l'écouteur d'événement article-unliked");
+      window.removeEventListener("article-unliked", handleUnlikeEvent);
+    };
+  }, [currentArticleIndex]);
 
   // Fonction de navigation avec le clavier
   const handleKeyDown = useCallback(
@@ -101,11 +148,13 @@ function MesLikes({ setShowLikes }) {
             },
           }
         );
+        console.log("Recommendations récupérées:", response.data);
 
         // Filtrer les recommendations pour cet utilisateur
         const userRecommendations = response.data.filter(
           (rec) => rec.user_id === userId
         );
+        console.log("Recommendations de l'utilisateur:", userRecommendations);
 
         if (userRecommendations.length === 0) {
           setLikedArticles([]);
@@ -128,6 +177,7 @@ function MesLikes({ setShowLikes }) {
         const likedArticles = articlesResponse.data.filter((article) =>
           articleIds.includes(article.id)
         );
+        console.log("Articles likés récupérés:", likedArticles);
 
         // Trier par date (du plus récent au plus ancien)
         const sortedArticles = likedArticles.sort(
@@ -146,7 +196,7 @@ function MesLikes({ setShowLikes }) {
     if (userId) {
       fetchLikedArticles();
     }
-  }, [userId]);
+  }, [userId, forceRefresh]);
 
   // Ajouter des références aux boutons pour la navigation externe
   useEffect(() => {
@@ -247,130 +297,137 @@ function MesLikes({ setShowLikes }) {
           onTouchEnd={onTouchEnd}
         >
           <div className="h-full relative">
-            {likedArticles.length > 0 && (
-              <div
-                key={likedArticles[currentArticleIndex].id}
-                className="rounded-3xl shadow-md overflow-hidden p-4 relative h-full flex flex-col"
-                style={{
-                  backgroundColor: getCategoryColor(
-                    likedArticles[currentArticleIndex].category_id
-                  ),
-                }}
-              >
-                {/* Header avec icône, titre et date - taille dynamique et auto */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-start gap-4">
-                    {/* Icône de catégorie */}
-                    {getCategoryIcon(
-                      likedArticles[currentArticleIndex].category?.id
-                    ) && (
-                      <img
-                        src={getCategoryIcon(
-                          likedArticles[currentArticleIndex].category?.id
-                        )}
-                        alt={likedArticles[currentArticleIndex].category?.name}
-                        className="w-15 h-15 p-2 rounded-full"
-                      />
-                    )}
+            {likedArticles.length > 0 &&
+              currentArticleIndex < likedArticles.length && (
+                <div
+                  key={`article-${likedArticles[currentArticleIndex].id}-${forceRefresh}`}
+                  className="rounded-3xl shadow-md overflow-hidden p-4 relative h-full flex flex-col"
+                  style={{
+                    backgroundColor: getCategoryColor(
+                      likedArticles[currentArticleIndex].category_id
+                    ),
+                  }}
+                >
+                  {/* Header avec icône, titre et date - taille dynamique et auto */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-start gap-4">
+                      {/* Icône de catégorie */}
+                      {getCategoryIcon(
+                        likedArticles[currentArticleIndex].category?.id
+                      ) && (
+                        <img
+                          src={getCategoryIcon(
+                            likedArticles[currentArticleIndex].category?.id
+                          )}
+                          alt={
+                            likedArticles[currentArticleIndex].category?.name
+                          }
+                          className="w-15 h-15 p-2 rounded-full"
+                        />
+                      )}
 
-                    {/* Titre et catégorie */}
-                    <div className="flex flex-col">
-                      <h2 className="text-xl font-bold text-[#22333B]">
-                        {likedArticles[currentArticleIndex].title}
-                      </h2>
-                      <span className="text-sm font-medium text-[#22333B]/80">
-                        {likedArticles[currentArticleIndex].category?.name}
-                      </span>
+                      {/* Titre et catégorie */}
+                      <div className="flex flex-col">
+                        <h2 className="text-xl font-bold text-[#22333B]">
+                          {likedArticles[currentArticleIndex].title}
+                        </h2>
+                        <span className="text-sm font-medium text-[#22333B]/80">
+                          {likedArticles[currentArticleIndex].category?.name}
+                        </span>
+                      </div>
                     </div>
+
+                    {/* Date */}
+                    <span className="text-sm text-[#4B4B4B]/70">
+                      {new Date(
+                        likedArticles[currentArticleIndex].created_at
+                      ).toLocaleDateString("fr-FR")}
+                    </span>
                   </div>
 
-                  {/* Date */}
-                  <span className="text-sm text-[#4B4B4B]/70">
-                    {new Date(
-                      likedArticles[currentArticleIndex].created_at
-                    ).toLocaleDateString("fr-FR")}
-                  </span>
-                </div>
-
-                {/* Container pour l'image et le texte superposé - avec espace flexible */}
-                <div className="relative flex-grow">
-                  {likedArticles[currentArticleIndex].image && (
-                    <div className="h-[384px]">
-                      <img
-                        src={likedArticles[currentArticleIndex].image.image_url}
-                        alt={likedArticles[currentArticleIndex].title}
-                        className="w-full h-full object-cover rounded-3xl"
-                      />
-                    </div>
-                  )}
-                  {/* Div superposée avec le texte */}
-                  <div
-                    className={`absolute w-full transition-all duration-300 cursor-pointer rounded-3xl bg-white/99 bottom-0 p-4
+                  {/* Container pour l'image et le texte superposé - avec espace flexible */}
+                  <div className="relative flex-grow">
+                    {likedArticles[currentArticleIndex].image && (
+                      <div className="h-[384px]">
+                        <img
+                          src={
+                            likedArticles[currentArticleIndex].image.image_url
+                          }
+                          alt={likedArticles[currentArticleIndex].title}
+                          className="w-full h-full object-cover rounded-3xl"
+                        />
+                      </div>
+                    )}
+                    {/* Div superposée avec le texte */}
+                    <div
+                      className={`absolute w-full transition-all duration-300 cursor-pointer rounded-3xl bg-white/99 bottom-0 p-4
                     ${
                       expandedArticle === likedArticles[currentArticleIndex].id
                         ? "h-150"
                         : "h-96"
                     }`}
-                    onClick={() =>
-                      setExpandedArticle(
-                        expandedArticle ===
-                          likedArticles[currentArticleIndex].id
-                          ? null
-                          : likedArticles[currentArticleIndex].id
-                      )
-                    }
-                  >
-                    <div className="h-full flex flex-col">
-                      <div className="mb-4">
-                        {" "}
-                        {/* Conteneur pour le titre avec marge en bas */}
-                        <h3 className="font-semibold text-3xl">
-                          <span className="text-[#22333B]">Mieux</span>{" "}
-                          <span
-                            style={{
-                              color: getCategoryColor(
-                                likedArticles[currentArticleIndex].category?.id
-                              ),
-                            }}
-                          >
-                            comprendre
-                          </span>
-                        </h3>
-                      </div>
-                      <div className="flex-grow overflow-hidden">
-                        {" "}
-                        {/* Conteneur pour le contenu */}
-                        <p
-                          className={`text-[#4B4B4B] text-sm leading-relaxed
+                      onClick={() =>
+                        setExpandedArticle(
+                          expandedArticle ===
+                            likedArticles[currentArticleIndex].id
+                            ? null
+                            : likedArticles[currentArticleIndex].id
+                        )
+                      }
+                    >
+                      <div className="h-full flex flex-col">
+                        <div className="mb-4">
+                          {" "}
+                          {/* Conteneur pour le titre avec marge en bas */}
+                          <h3 className="font-semibold text-3xl">
+                            <span className="text-[#22333B]">Mieux</span>{" "}
+                            <span
+                              style={{
+                                color: getCategoryColor(
+                                  likedArticles[currentArticleIndex].category
+                                    ?.id
+                                ),
+                              }}
+                            >
+                              comprendre
+                            </span>
+                          </h3>
+                        </div>
+                        <div className="flex-grow overflow-hidden">
+                          {" "}
+                          {/* Conteneur pour le contenu */}
+                          <p
+                            className={`text-[#4B4B4B] text-sm leading-relaxed
                       ${
                         expandedArticle ===
                         likedArticles[currentArticleIndex].id
                           ? "overflow-y-auto h-full"
                           : "line-clamp-2"
                       }`}
-                        >
-                          {likedArticles[currentArticleIndex].content}
-                        </p>
-                      </div>
+                          >
+                            {likedArticles[currentArticleIndex].content}
+                          </p>
+                        </div>
 
-                      {expandedArticle !==
-                        likedArticles[currentArticleIndex].id && (
-                        <div className="absolute bottom-4 right-4"></div>
-                      )}
+                        {expandedArticle !==
+                          likedArticles[currentArticleIndex].id && (
+                          <div className="absolute bottom-4 right-4"></div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
           {/* Exposer l'ID de l'article actuel pour le composant parent */}
-          {likedArticles.length > 0 && (
-            <div className="hidden">
-              <span id="meslikes-article-id">
-                {likedArticles[currentArticleIndex].id}
-              </span>
-            </div>
-          )}
+          {likedArticles.length > 0 &&
+            currentArticleIndex < likedArticles.length && (
+              <div className="hidden">
+                <span id="meslikes-article-id">
+                  {likedArticles[currentArticleIndex].id}
+                </span>
+              </div>
+            )}
         </div>
       )}
 
@@ -423,14 +480,15 @@ function MesLikes({ setShowLikes }) {
       )}
 
       {/* Footer positionné au centre en bas */}
-      {likedArticles.length > 0 && (
-        <div className="absolute bottom-[clamp(10px,4vh,80px)] left-0 right-0 mx-auto w-full flex justify-center">
-          <Footer
-            articleId={likedArticles[currentArticleIndex].id}
-            onCategoryClick={() => {}}
-          />
-        </div>
-      )}
+      {likedArticles.length > 0 &&
+        currentArticleIndex < likedArticles.length && (
+          <div className="absolute bottom-[clamp(10px,4vh,80px)] left-0 right-0 mx-auto w-full flex justify-center">
+            <Footer
+              articleId={likedArticles[currentArticleIndex].id}
+              onCategoryClick={() => {}}
+            />
+          </div>
+        )}
     </div>
   );
 }

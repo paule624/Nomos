@@ -259,7 +259,10 @@ function Profil({ setActiveTab }) {
 
                       {/* Div de l'image avec les dimensions réduites */}
                       {article.image && (
-                        <div className="w-[201px] h-[192px] mx-auto mt-auto overflow-hidden shadow-[0_1.3px_3.94px_0.87px_rgba(0,0,0,0.25)] rounded-2xl ">
+                        <div
+                          className="w-[201px] h-[192px] mx-auto mt-auto overflow-hidden shadow-[0_1.3px_3.94px_0.87px_rgba(0,0,0,0.25)] rounded-2xl cursor-pointer"
+                          onClick={() => setShowLikes(true)}
+                        >
                           <img
                             src={article.image.image_url}
                             alt={article.title}

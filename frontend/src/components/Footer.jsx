@@ -63,18 +63,12 @@ function Footer({ onCategoryClick, articleId }) {
       const user = userStr ? JSON.parse(userStr) : null;
       const userId = user?.id;
 
-      if (!userId) {
-        console.log("Utilisateur non connecté");
-        return;
-      }
-
       if (!isLiked) {
         // Déboguer les données envoyées
         const dataToSend = {
           user_id: userId,
           article_id: articleId,
         };
-        console.log("Sending like data:", dataToSend);
 
         try {
           // Créer une recommendation (qui servira de like)
@@ -109,6 +103,12 @@ function Footer({ onCategoryClick, articleId }) {
             console.log("Like retiré avec succès");
             setIsLiked(false);
             setActiveIcon(null);
+
+            // Déclencher un événement custom pour signaler qu'un article a été unliké
+            const unlikeEvent = new CustomEvent("article-unliked", {
+              detail: { articleId: articleId },
+            });
+            window.dispatchEvent(unlikeEvent);
           } catch (err) {
             console.error(
               "Erreur lors de la suppression du like:",

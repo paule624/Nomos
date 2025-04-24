@@ -58,7 +58,7 @@ const Home = () => {
   };
 
   return (
-    <div className="home flex flex-col md:flex-row h-screen bg-[#22333B]">
+    <div className="home flex flex-col md:flex-row h-screen bg-[#22333B] overflow-hidden">
       {/* La navbar est cachée sur mobile et visible sur desktop */}
       <div className="navbar hidden md:flex border-r border-white/25 w-[calc(100vw/6)] flex-col">
         <img src={Logo_nom} alt="" className="p-6" />
@@ -200,10 +200,10 @@ const Home = () => {
       <div
         className={`flex justify-center items-center w-full ${
           isAuthenticated() ? "md:w-[calc(5*100vw/6)]" : "md:w-full"
-        } relative`}
+        } relative overflow-hidden`}
       >
         {/* Container avec taille maximale */}
-        <div className="relative mx-auto w-full h-full md:max-w-[500px] md:h-[90vh] md:min-h-[600px] md:max-h-[1000px]">
+        <div className="relative mx-auto w-full h-full md:max-w-[500px] md:h-[90vh] md:min-h-[600px] md:max-h-[1000px] overflow-hidden">
           {/* Mockup du téléphone avec ratio préservé - visible uniquement sur desktop */}
           <div className="relative w-full h-full bg-[#F2F4F3] md:bg-[#] md:rounded-[clamp(30px,5vw,60px)] md:shadow-xl md:overflow-hidden md:border-[clamp(8px,1.5vw,14px)] md:border-[#22333B]">
             {/* Encoche du téléphone - visible uniquement sur desktop */}
@@ -280,6 +280,7 @@ const Home = () => {
                     ? "h-full"
                     : "h-[calc(100%-70px)] md:h-[calc(100%-clamp(100px,15vh,150px))]"
                 }`}
+                style={{ WebkitOverflowScrolling: "touch" }}
               >
                 {/* Navigation controls pour tous les onglets - adaptés pour mobile */}
                 {(activeTab === "actualites" || activeTab === "pourtoi") && (
