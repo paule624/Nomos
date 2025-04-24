@@ -11,8 +11,19 @@ const authRoutes = require("../routes/authRoutes");
 const reactionRoutes = require("../routes/reactionRoutes");
 const app = express();
 
+const corsOptions = {
+  origin: [
+    "https://nomos-project.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000",
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Routes
