@@ -9,18 +9,15 @@ console.log(`Mode: ${isProduction ? "Production" : "Développement"}`);
 let sequelize;
 
 if (isProduction) {
-  // PRODUCTION - Supabase
-  console.log("Tentative de connexion à Supabase...");
-  console.log(`Host: ${process.env.SUPABASE_DB_HOST}`);
+  // PRODUCTION - Supabase avec URL de connexion complète
+  console.log("Tentative de connexion à Supabase via URI...");
 
   try {
-    // Utiliser les variables d'environnement système définies dans vercel.json
-    const connectionConfig = {
-      host: process.env.SUPABASE_DB_HOST,
-      port: process.env.SUPABASE_DB_PORT,
-      database: process.env.SUPABASE_DB_NAME,
-      username: process.env.SUPABASE_DB_USER,
-      password: process.env.SUPABASE_DB_PASSWORD,
+    // Chaîne de connexion complète pour Supabase
+    const connectionString =
+      "postgresql://postgres:rUqZIBG8223i2mNO@db.hrzzkzqevlbaycllebhb.supabase.co:5432/postgres";
+
+    sequelize = new Sequelize(connectionString, {
       dialect: "postgres",
       dialectOptions: {
         ssl: {
@@ -35,30 +32,9 @@ if (isProduction) {
         acquire: 30000,
         idle: 10000,
       },
-      retry: {
-        match: [
-          /SequelizeConnectionError/,
-          /SequelizeConnectionRefusedError/,
-          /SequelizeHostNotFoundError/,
-          /SequelizeHostNotReachableError/,
-          /SequelizeInvalidConnectionError/,
-          /SequelizeConnectionTimedOutError/,
-          /TimeoutError/,
-        ],
-        max: 5,
-        backoffBase: 1000,
-        backoffExponent: 1.5,
-      },
-    };
+    });
 
-    sequelize = new Sequelize(
-      connectionConfig.database,
-      connectionConfig.username,
-      connectionConfig.password,
-      connectionConfig
-    );
-
-    console.log("Configuration Supabase initialisée");
+    console.log("Configuration Supabase initialisée avec URI");
   } catch (error) {
     console.error(
       "Erreur lors de l'initialisation de la configuration Supabase:",
@@ -100,6 +76,10 @@ const testConnection = async () => {
     return true;
   } catch (error) {
     console.error("❌ Impossible de se connecter à la base de données:", error);
+    console.error("Détails de l'erreur:", error.message);
+    if (error.original) {
+      console.error("Erreur originale:", error.original.message);
+    }
     return false;
   }
 };

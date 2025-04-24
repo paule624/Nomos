@@ -7,30 +7,86 @@ const register = async (req, res) => {
   try {
     const { email, password, first_name, last_name, role } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email et mot de passe requis",
+        success: false,
+      });
+    }
+
     // Vérifier si l'utilisateur existe déjà
-    const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) {
-      return res.status(400).json({ message: "Cet email est déjà utilisé" });
+    try {
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser) {
+        return res.status(400).json({
+          message: "Cet email est déjà utilisé",
+          success: false,
+        });
+      }
+    } catch (dbError) {
+      console.error("Erreur lors de la vérification d'email:", dbError);
+      return res.status(500).json({
+        message:
+          "Erreur de connexion à la base de données. Veuillez réessayer plus tard.",
+        error:
+          process.env.NODE_ENV === "production" ? undefined : dbError.message,
+        success: false,
+      });
     }
 
     // Hasher le mot de passe
-    const hashedPassword = await bcrypt.hash(password, 10);
+    let hashedPassword;
+    try {
+      hashedPassword = await bcrypt.hash(password, 10);
+    } catch (hashError) {
+      console.error("Erreur lors du hashage du mot de passe:", hashError);
+      return res.status(500).json({
+        message: "Erreur lors de la création de l'utilisateur",
+        success: false,
+      });
+    }
 
     // Créer l'utilisateur
-    const user = await User.create({
-      email,
-      password: hashedPassword,
-      first_name,
-      last_name,
-      role: role || "user",
-    });
+    let user;
+    try {
+      user = await User.create({
+        email,
+        password: hashedPassword,
+        first_name: first_name || null,
+        last_name: last_name || null,
+        role: role || "user",
+      });
+    } catch (createError) {
+      console.error(
+        "Erreur lors de la création de l'utilisateur:",
+        createError
+      );
+      return res.status(500).json({
+        message: "Erreur lors de la création de l'utilisateur",
+        error:
+          process.env.NODE_ENV === "production"
+            ? undefined
+            : createError.message,
+        success: false,
+      });
+    }
 
     // Générer un token JWT
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "24h" }
-    );
+    let token;
+    try {
+      token = jwt.sign(
+        { id: user.id, email: user.email, role: user.role },
+        process.env.JWT_SECRET ||
+          "2737ef18066ace929a2a5edd8cf8de60a8dffbfd0d8534b079fdc64c12d7b73cf529a7c9f43a65de49d533cf8a3d1487fa8aa7a6574695879d220a632a7369c9",
+        { expiresIn: "24h" }
+      );
+    } catch (tokenError) {
+      console.error("Erreur lors de la génération du token:", tokenError);
+      return res.status(500).json({
+        message: "Erreur lors de la génération du token",
+        success: false,
+      });
+    }
 
     res.status(201).json({
       message: "Utilisateur créé avec succès",
@@ -42,11 +98,15 @@ const register = async (req, res) => {
         last_name: user.last_name,
         role: user.role,
       },
+      success: true,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: `Erreur lors de l'inscription: ${error.message}` });
+    console.error("Erreur non gérée lors de l'inscription:", error);
+    res.status(500).json({
+      message: "Une erreur inattendue est survenue lors de l'inscription",
+      error: process.env.NODE_ENV === "production" ? undefined : error.message,
+      success: false,
+    });
   }
 };
 
@@ -55,28 +115,71 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email et mot de passe requis",
+        success: false,
+      });
+    }
+
     // Vérifier si l'utilisateur existe
-    const user = await User.findOne({ where: { email } });
-    if (!user) {
-      return res
-        .status(401)
-        .json({ message: "Email ou mot de passe incorrect" });
+    let user;
+    try {
+      user = await User.findOne({ where: { email } });
+      if (!user) {
+        return res.status(401).json({
+          message: "Email ou mot de passe incorrect",
+          success: false,
+        });
+      }
+    } catch (dbError) {
+      console.error("Erreur lors de la recherche de l'utilisateur:", dbError);
+      return res.status(500).json({
+        message:
+          "Erreur de connexion à la base de données. Veuillez réessayer plus tard.",
+        error:
+          process.env.NODE_ENV === "production" ? undefined : dbError.message,
+        success: false,
+      });
     }
 
     // Vérifier le mot de passe
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res
-        .status(401)
-        .json({ message: "Email ou mot de passe incorrect" });
+    let isPasswordValid;
+    try {
+      isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({
+          message: "Email ou mot de passe incorrect",
+          success: false,
+        });
+      }
+    } catch (bcryptError) {
+      console.error(
+        "Erreur lors de la vérification du mot de passe:",
+        bcryptError
+      );
+      return res.status(500).json({
+        message: "Erreur lors de la vérification des identifiants",
+        success: false,
+      });
     }
 
     // Générer un token JWT
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "24h" }
-    );
+    let token;
+    try {
+      token = jwt.sign(
+        { id: user.id, email: user.email, role: user.role },
+        process.env.JWT_SECRET ||
+          "2737ef18066ace929a2a5edd8cf8de60a8dffbfd0d8534b079fdc64c12d7b73cf529a7c9f43a65de49d533cf8a3d1487fa8aa7a6574695879d220a632a7369c9",
+        { expiresIn: "24h" }
+      );
+    } catch (tokenError) {
+      console.error("Erreur lors de la génération du token:", tokenError);
+      return res.status(500).json({
+        message: "Erreur lors de la génération du token",
+        success: false,
+      });
+    }
 
     res.status(200).json({
       message: "Connexion réussie",
@@ -88,28 +191,65 @@ const login = async (req, res) => {
         last_name: user.last_name,
         role: user.role,
       },
+      success: true,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: `Erreur lors de la connexion: ${error.message}` });
+    console.error("Erreur non gérée lors de la connexion:", error);
+    res.status(500).json({
+      message: "Une erreur inattendue est survenue lors de la connexion",
+      error: process.env.NODE_ENV === "production" ? undefined : error.message,
+      success: false,
+    });
   }
 };
 
 // Récupérer les informations de l'utilisateur connecté
 const getMe = async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.id, {
-      attributes: { exclude: ["password"] },
-    });
-
-    if (!user) {
-      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        message: "Non autorisé",
+        success: false,
+      });
     }
 
-    res.status(200).json(user);
+    let user;
+    try {
+      user = await User.findByPk(req.user.id, {
+        attributes: { exclude: ["password"] },
+      });
+    } catch (dbError) {
+      console.error(
+        "Erreur lors de la récupération de l'utilisateur:",
+        dbError
+      );
+      return res.status(500).json({
+        message: "Erreur de connexion à la base de données",
+        error:
+          process.env.NODE_ENV === "production" ? undefined : dbError.message,
+        success: false,
+      });
+    }
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Utilisateur non trouvé",
+        success: false,
+      });
+    }
+
+    res.status(200).json({
+      user,
+      success: true,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Erreur non gérée dans getMe:", error);
+    res.status(500).json({
+      message:
+        "Une erreur est survenue lors de la récupération des informations utilisateur",
+      error: process.env.NODE_ENV === "production" ? undefined : error.message,
+      success: false,
+    });
   }
 };
 

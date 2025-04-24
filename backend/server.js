@@ -1,23 +1,25 @@
-// Charger le bon fichier d'environnement selon NODE_ENV
-require("dotenv").config({
-  path: `.env.${process.env.NODE_ENV || "development"}`,
-});
+// Ne pas charger dotenv en production sur Vercel
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config({
+    path: `.env.${process.env.NODE_ENV || "development"}`,
+  });
+}
 
 const app = require("./config/app");
 const { sequelize, testConnection } = require("./config/database");
-// Importer tous les modèles depuis l'index
 const models = require("./models");
 
 // Initialiser la base de données de façon plus robuste
 async function initializeDatabase() {
   try {
+    console.log("Tentative de connexion à la base de données...");
     const connected = await testConnection();
 
     if (connected) {
       // Utiliser force: false, alter: false pour éviter les problèmes de contraintes
-      // et conserver les données existantes
+      console.log("Synchronisation des modèles...");
       await sequelize.sync({ force: false, alter: false });
-      console.log("Database synchronization check completed");
+      console.log("Database synchronization completed successfully");
       return true;
     } else {
       console.log("Database connection failed, but continuing...");
@@ -54,16 +56,18 @@ if (process.env.NODE_ENV !== "production") {
     });
   });
 } else {
-  // En production (Vercel), initialisation au premier démarrage
-  // mais on n'attend pas que ça se termine pour exporter l'app
+  // En production (Vercel)
+  // Initialisation au premier démarrage - mais ne bloque pas l'application
+  console.log("Production mode - initializing database in background");
+
+  // Ne pas bloquer le serveur en attendant la connexion à la base de données
   initializeDatabase().catch((err) => {
     console.error("Database initialization failed in production:", err);
   });
 }
 
-// Gestionnaire de route par défaut
+// Gestionnaire de route par défaut pour les 404
 app.use((req, res) => {
-  // Liste statique des routes principales
   const availableRoutes = [
     "/articles",
     "/users",
@@ -80,6 +84,15 @@ app.use((req, res) => {
   res.status(404).json({
     message: `Route ${req.path} not found`,
     availableRoutes,
+  });
+});
+
+// Middleware de gestion d'erreurs globales
+app.use((err, req, res, next) => {
+  console.error("Erreur non gérée:", err);
+  res.status(500).json({
+    message: "Une erreur interne s'est produite",
+    error: process.env.NODE_ENV === "production" ? undefined : err.message,
   });
 });
 
