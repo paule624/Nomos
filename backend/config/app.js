@@ -11,25 +11,24 @@ const authRoutes = require("../routes/authRoutes");
 const reactionRoutes = require("../routes/reactionRoutes");
 const app = express();
 
-// Configuration CORS pour production et développement
 const corsOptions = {
   origin: [
-    process.env.FRONTEND_URL, // Frontend en production (depuis .env)
-    "http://localhost:5173", // Frontend en développement (Vite)
-    "http://localhost:3000", // En cas d'utilisation sur un autre port local
+    process.env.FRONTEND_URL,
+    "https://nomos-seven.vercel.app",
+    "https://nomos-project.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000",
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
 
-// Middleware personnalisé pour CORS
 app.use((req, res, next) => {
-  // Origines autorisées
   const allowedOrigins = [
-    process.env.FRONTEND_URL, // Frontend en production (depuis .env)
-    "http://localhost:5173", // Frontend en développement (Vite)
-    "http://localhost:3000", // En cas d'utilisation sur un autre port local
+    process.env.FRONTEND_URL,
+    "http://localhost:5173",
+    "http://localhost:3000",
   ];
 
   const origin = req.headers.origin;
@@ -37,7 +36,6 @@ app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
 
-  // Permettre les en-têtes et méthodes nécessaires
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, PUT, DELETE, PATCH, OPTIONS"
@@ -45,7 +43,6 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.setHeader("Access-Control-Allow-Credentials", "true");
 
-  // Prétraiter les requêtes OPTIONS
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
@@ -53,10 +50,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Middleware (après notre middleware CORS personnalisé)
 app.use(express.json());
 
-// Routes pour l'API avec le bon préfixe
 app.use("/api/articles", articleRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/categories", categoryRoutes);
@@ -66,9 +61,7 @@ app.use("/api/cloudinary-images", cloudinaryImageRoutes);
 app.use("/api/recommendations", recommendationRoutes);
 app.use("/api/reactions", reactionRoutes);
 
-// Gestionnaire pour les routes 404 qui renvoie les routes disponibles
 app.use((req, res) => {
-  // Liste statique des routes principales
   const availableRoutes = [
     "/api/articles",
     "/api/users",

@@ -23,7 +23,7 @@ function Register({ onRegisterSuccess }) {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/auth/register`,
+        `${import.meta.env.VITE_API_URL}/api/auth/register`,
         {
           email: formData.email,
           password: formData.password,
@@ -64,6 +64,7 @@ function Register({ onRegisterSuccess }) {
             className="w-full p-2.5 md:p-3 bg-white/50 backdrop-blur-sm border-2 border-[#22333B]/10 rounded-xl 
             focus:outline-none focus:border-[#D7F75B] focus:shadow-[0_0_7.53px_rgba(215,247,91,0.7)] 
             transition-all text-sm md:text-base"
+            autoComplete="email"
             required
           />
         </div>
@@ -83,6 +84,7 @@ function Register({ onRegisterSuccess }) {
             className="w-full p-2.5 md:p-3 bg-white/50 backdrop-blur-sm border-2 border-[#22333B]/10 rounded-xl 
             focus:outline-none focus:border-[#D7F75B] focus:shadow-[0_0_7.53px_rgba(215,247,91,0.7)] 
             transition-all text-sm md:text-base"
+            autoComplete="new-password"
             required
           />
         </div>
